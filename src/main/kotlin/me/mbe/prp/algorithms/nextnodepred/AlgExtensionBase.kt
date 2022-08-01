@@ -27,7 +27,7 @@ abstract class AlgExtensionBase(p: AlgorithmParams, protected val eP: AlgExtensi
 
     //todo: maybe use time callback for future load instead of waiting like this
     //todo: use not only the average, but instead the time distribution with percentiles etc.
-    protected fun getNodesWithinDuration(l: List<Pair<Node?, Duration>>, state: WorldState): List<Node> {
+    protected open fun getNodesWithinDuration(l: List<Pair<Node?, Duration>>, state: WorldState): List<Node> {
         if (!storeDuration)
             return l.mapNotNull { it.first }
 
