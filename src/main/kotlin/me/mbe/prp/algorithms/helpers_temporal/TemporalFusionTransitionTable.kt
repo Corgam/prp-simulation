@@ -131,6 +131,8 @@ class TemporalFusionTransitionTable(
     }
 
     override fun computeSize(): Capacity {
-        return GraphLayout.parseInstance(transitionTables).totalSize()
+        //TODO: Fix the size calculation
+        //return GraphLayout.parseInstance(transitionTables).totalSize()
+        return 0
     }
 }
