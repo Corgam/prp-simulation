@@ -1,21 +1,30 @@
 package me.mbe.prp.algorithms.nextnodepred
 
 import me.mbe.prp.algorithms.helpers.AverageReducer
-import me.mbe.prp.algorithms.helpers.FusionTransitionTable
-import me.mbe.prp.algorithms.helpers.FusionTransitionTableConfig
+import me.mbe.prp.algorithms.helpers.TransitionTableDurationReducer
+import me.mbe.prp.algorithms.helpers_temporal.TemporalFusionTransitionTable
+import me.mbe.prp.algorithms.helpers_temporal.TemporalFusionTransitionTableConfig
 import me.mbe.prp.core.*
 import java.time.*
 import java.util.*
 
+val TemporalSetsReducer: TransitionTableDurationReducer = { durations, weight, temporalSets, date ->
+    if (temporalSets != null && date != null){
+        temporalSets.getPrediction(date)
+    }else{
+        Duration.ofSeconds(0)
+    }
+}
+
 // T-FOOM Algorithm from Emil Balitzki's Bachelor's Thesis
-class Alg013(
+class AlgT012(
     p: AlgorithmParams,
-    config: FusionTransitionTableConfig,
+    config: TemporalFusionTransitionTableConfig,
     eP: AlgExtensionBaseParams,
 ) : AlgExtensionBase(p, eP) {
     private val beijingZone: ZoneId = ZoneId.of("Asia/Shanghai")
 
-    private val transitionTable = FusionTransitionTable(config, eP.topN, AverageReducer, storeDuration)
+    private val transitionTable = TemporalFusionTransitionTable(config, eP.topN, TemporalSetsReducer, storeDuration)
 
     private var tripStartTimeZoned: ZonedDateTime? = null
 
@@ -33,6 +42,11 @@ class Alg013(
         correctMembers.add(currentNode)
 
         if (lastNodes.isEmpty() || currentNode != lastNodes.last()) {
+            var date: ZonedDateTime? = null
+            if(lastSwitchTime != Instant.MIN){
+                date = lastSwitchTime.atZone(beijingZone)
+            }
+            // At the start and when the nodes are changing
             transitionTable.addTransition(
                 Triple(
                     lastNodes,
@@ -40,7 +54,9 @@ class Alg013(
                     tripStartTimeZoned!!.toLocalTime()
                 ),
                 currentNode,
+                // In addition to the duration, also pass the date
                 duration = Duration.between(lastSwitchTime, state.time),
+                date = date
             )
             lastNodes.add(currentNode)
             lastSwitchTime = state.time
@@ -51,7 +67,8 @@ class Alg013(
                 ArrayList(lastNodes), // shallow copy
                 tripStartTimeZoned!!.dayOfWeek,
                 tripStartTimeZoned!!.toLocalTime(),
-            )
+            ),
+            state.time.atZone(beijingZone)
         )
 
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
@@ -68,12 +85,9 @@ class Alg013(
                 ),
                 null,
                 duration = Duration.between(lastSwitchTime, state.time),
+                date = lastSwitchTime.atZone(beijingZone)
             )
         }
-    }
-
-    override fun getNodesWithinDuration(l: List<Pair<Node?, Duration>>, state: WorldState): List<Node> {
-        return listOf()
     }
 
     override fun printState() {

@@ -3,6 +3,7 @@ package me.mbe.prp.geolife
 import me.mbe.prp.algorithms.Alg000
 import me.mbe.prp.algorithms.Alg001
 import me.mbe.prp.algorithms.helpers.FusionTransitionTableConfig
+import me.mbe.prp.algorithms.helpers_temporal.TemporalFusionTransitionTableConfig
 import me.mbe.prp.algorithms.nextnodepred.*
 import me.mbe.prp.algorithms.startuppred.Alg011
 import me.mbe.prp.algorithms.startuppred.Alg013
@@ -112,6 +113,21 @@ class Evaluation : EvaluationBase() {
             aEBPOptions.forEach { aEBP ->
                 val n = "Alg012_(${fTT})_(${aEBP})"
                 m[n] = Pair({ Alg012(it, fTT, aEBP) }, ::Alg013)
+            }
+        }
+
+        //AlgT013 - T-FOOM
+        val fTTTemporalOptions = cartesianProduct(
+            ::TemporalFusionTransitionTableConfig,
+            noLastNodesOptions,
+            setOf(listOf(1), listOf(1, 2), listOf(1, 2, 7)),
+            setOf(listOf(1), listOf(1, 4), listOf(1, 4, 12), listOf(1, 4, 24)),
+        )
+
+        fTTTemporalOptions.forEach { fTT ->
+            aEBPOptions.forEach { aEBP ->
+                val n = "AlgT012_(${fTT})_(${aEBP})"
+                m[n] = Pair({ AlgT012(it, fTT, aEBP) }, ::Alg013)
             }
         }
 
@@ -468,7 +484,8 @@ class Evaluation : EvaluationBase() {
                 "simpleNetwork_5min_100Nodes_100MB",
             ),
             listOf(
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)",
+                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)",
             ),
             // forceRun = true
         )

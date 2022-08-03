@@ -4,6 +4,7 @@ import me.mbe.prp.core.Capacity
 import me.mbe.prp.core.Node
 import org.openjdk.jol.info.GraphLayout
 import java.time.Duration
+import java.time.ZonedDateTime
 import kotlin.math.min
 
 class VOTransitionTable(
@@ -20,7 +21,7 @@ class VOTransitionTable(
         }
     }
 
-    override fun addTransitionInternal(lastNodes: List<Node>, currentNode: Node?, weight: Double, duration: Duration) {
+    override fun addTransitionInternal(lastNodes: List<Node>, currentNode: Node?, weight: Double, duration: Duration, date: ZonedDateTime?) {
         transitionTables.forEach { (depth, tt) ->
             if (lastNodes.size >= depth) {
                 tt.addTransition(
@@ -45,12 +46,12 @@ class VOTransitionTable(
         return emptyList()
     }
 
-    override fun getNextInternal(lastNodes: List<Node>): List<Pair<Node?, Duration>> {
-        return doWork({ d, x -> transitionTables[d]!!.getNext(x) }, lastNodes)
+    override fun getNextInternal(lastNodes: List<Node>, date: ZonedDateTime?): List<Pair<Node?, Duration>> {
+        return doWork({ d, x -> transitionTables[d]!!.getNext(x, date) }, lastNodes)
     }
 
-    override fun getNextWithProbAllInternal(lastNodes: List<Node>): List<Triple<Node?, Duration, Double>> {
-        return doWork({ d, x -> transitionTables[d]!!.getNextWithProbAll(x) }, lastNodes)
+    override fun getNextWithProbAllInternal(lastNodes: List<Node>, date: ZonedDateTime?): List<Triple<Node?, Duration, Double>> {
+        return doWork({ d, x -> transitionTables[d]!!.getNextWithProbAll(x, date) }, lastNodes)
     }
 
     override fun toString(): String {

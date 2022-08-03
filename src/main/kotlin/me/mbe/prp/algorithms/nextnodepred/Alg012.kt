@@ -50,7 +50,8 @@ class Alg012(
                 ArrayList(lastNodes), // shallow copy
                 tripStartTimeZoned!!.dayOfWeek,
                 tripStartTimeZoned!!.toLocalTime(),
-            )
+            ),
+            null
         )
 
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))

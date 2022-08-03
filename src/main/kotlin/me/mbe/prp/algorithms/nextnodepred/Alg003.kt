@@ -43,7 +43,7 @@ class Alg003(
         }
 
         if (lastNodes.size == noLastNodes) {
-            val nextNodes = transitionTable.getNext(lastNodes)
+            val nextNodes = transitionTable.getNext(lastNodes, null)
             correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
         }
 

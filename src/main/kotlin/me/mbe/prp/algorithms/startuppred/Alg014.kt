@@ -41,7 +41,7 @@ class Alg014(
 
         lastPosition = Pair(t, state.time)
 
-        val predList = pauses.getNext(t)
+        val predList = pauses.getNext(t, null)
 
         if (predList.isEmpty()) {
             state.setKeygroupMembers(kg, listOf())

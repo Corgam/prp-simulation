@@ -40,7 +40,7 @@ class Alg004(
             lastNodes.removeFirst()
         }
 
-        val nextNodes = transitionTable.getNext(lastNodes)
+        val nextNodes = transitionTable.getNext(lastNodes, null)
 
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
 

@@ -1,6 +1,7 @@
-package me.mbe.prp.algorithms.helpers
+package me.mbe.prp.algorithms.helpers_temporal
 
 
+import me.mbe.prp.algorithms.helpers.*
 import me.mbe.prp.base.cartesianProduct
 import me.mbe.prp.core.Capacity
 import me.mbe.prp.core.Node
@@ -12,12 +13,12 @@ import java.time.ZonedDateTime
 import java.util.LinkedHashMap
 import kotlin.math.pow
 
-data class FusionTransitionTableConfig(val maxDepth: Int, val dowSplits: List<Int>, val todSplits: List<Int>) {
+data class TemporalFusionTransitionTableConfig(val maxDepth: Int, val dowSplits: List<Int>, val todSplits: List<Int>) {
     override fun toString(): String = "${maxDepth}_${dowSplits}_${todSplits}"
 }
 
-class FusionTransitionTable(
-    private val config: FusionTransitionTableConfig,
+class TemporalFusionTransitionTable(
+    private val config: TemporalFusionTransitionTableConfig,
     topN: Double,
     reducer: TransitionTableDurationReducer,
     storeDuration: Boolean
@@ -30,7 +31,7 @@ class FusionTransitionTable(
     )
 
     private val transitionTables =
-        LinkedHashMap<TTSpecification, TransitionTableImpl<Triple<List<Node>, Int, Int>, Node?>>()
+        LinkedHashMap<TTSpecification, TemporalTransitionTableImpl<Triple<List<Node>, Int, Int>, Node?>>()
 
     init {
         cartesianProduct(
@@ -40,7 +41,7 @@ class FusionTransitionTable(
             config.todSplits
         ).forEach {
             transitionTables[it] =
-                TransitionTableImpl(topN = Double.MAX_VALUE, reducer = reducer, storeDuration = storeDuration)
+                TemporalTransitionTableImpl(topN = Double.MAX_VALUE, reducer = reducer, storeDuration = storeDuration)
         }
     }
 
@@ -49,7 +50,7 @@ class FusionTransitionTable(
         to: Node?,
         weight: Double,
         duration: Duration,
-        date: ZonedDateTime?
+        date: ZonedDateTime?,
     ) {
         transitionTables.forEach { (k, v) ->
             if (from.first.size >= k.depth) {
@@ -61,7 +62,8 @@ class FusionTransitionTable(
                     ),
                     to,
                     weight,
-                    duration
+                    duration,
+                    date
                 )
             }
         }
@@ -130,24 +132,5 @@ class FusionTransitionTable(
 
     override fun computeSize(): Capacity {
         return GraphLayout.parseInstance(transitionTables).totalSize()
-    }
-}
-
-fun dowSplitFn(dow: DayOfWeek, dowSplitCount: Int): Int {
-    return when (dowSplitCount) {
-        1 -> 0
-        2 -> if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) 1 else 0
-        7 -> dow.ordinal
-        else -> throw IllegalArgumentException()
-    }
-}
-
-fun todSplitFn(tod: LocalTime, todSplitCount: Int): Int {
-    return when (todSplitCount) {
-        1 -> 0
-        4 -> tod.hour / 6
-        12 -> tod.hour / 2
-        24 -> tod.hour
-        else -> throw IllegalArgumentException()
     }
 }
