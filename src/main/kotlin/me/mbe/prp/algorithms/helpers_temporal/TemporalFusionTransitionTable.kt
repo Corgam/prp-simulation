@@ -13,8 +13,8 @@ import java.time.ZonedDateTime
 import java.util.LinkedHashMap
 import kotlin.math.pow
 
-data class TemporalFusionTransitionTableConfig(val maxDepth: Int, val dowSplits: List<Int>, val todSplits: List<Int>) {
-    override fun toString(): String = "${maxDepth}_${dowSplits}_${todSplits}"
+data class TemporalFusionTransitionTableConfig(val maxDepth: Int, val dowSplits: List<Int>, val todSplits: List<Int>, val temporalSplits: String) {
+    override fun toString(): String = "${maxDepth}_${dowSplits}_${todSplits}_${temporalSplits}"
 }
 
 class TemporalFusionTransitionTable(
@@ -38,10 +38,10 @@ class TemporalFusionTransitionTable(
             ::TTSpecification,
             1.rangeTo(config.maxDepth).toSet(),
             config.dowSplits,
-            config.todSplits
+            config.todSplits,
         ).forEach {
             transitionTables[it] =
-                TemporalTransitionTableImpl(topN = Double.MAX_VALUE, reducer = reducer, storeDuration = storeDuration)
+                TemporalTransitionTableImpl(topN = Double.MAX_VALUE, reducer = reducer, storeDuration = storeDuration, temporalSplit = config.temporalSplits)
         }
     }
 

@@ -223,25 +223,26 @@ class Evaluation : EvaluationBase() {
             }
         )
 
-        m["AlgT012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M"] = Pair(
-            {
-                AlgT012(
-                    it,
-                    TemporalFusionTransitionTableConfig(5, listOf(1, 2, 7), listOf(1, 4, 24)),
-                    AlgExtensionBaseParams(0.9, Duration.ofMinutes(5), true)
-                )
-            },
-            {
-                Alg011(
-                    it,
-                    fixedDuration = true,
-                    enableShortPauseNodeSpecific = false,
-                    shortPausePercentile = 0.5,
-                    maxDuration = Duration.ofMinutes(10),
-                )
-            }
-        )
-
+        for (conf in listOf("a","h","w","m","n")){
+            m["AlgT012_(5_[1, 2, 7]_[1, 4, 24]_${conf})_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M"] = Pair(
+                {
+                    AlgT012(
+                        it,
+                        TemporalFusionTransitionTableConfig(5, listOf(1, 2, 7), listOf(1, 4, 24),conf),
+                        AlgExtensionBaseParams(0.9, Duration.ofMinutes(5), true)
+                    )
+                },
+                {
+                    Alg011(
+                        it,
+                        fixedDuration = true,
+                        enableShortPauseNodeSpecific = false,
+                        shortPausePercentile = 0.5,
+                        maxDuration = Duration.ofMinutes(10),
+                    )
+                }
+            )
+        }
         return m
     }
 
@@ -503,8 +504,12 @@ class Evaluation : EvaluationBase() {
                 "simpleNetwork_5min_100Nodes_100MB",
             ),
             listOf(
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_n)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
                 "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
             ),
             // forceRun = true
         )

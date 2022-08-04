@@ -2,7 +2,6 @@ package me.mbe.prp.algorithms.helpers_temporal
 
 import me.mbe.prp.algorithms.helpers.TransitionTable
 import me.mbe.prp.algorithms.helpers.TransitionTableDurationReducer
-import me.mbe.prp.base.percentile
 import me.mbe.prp.core.Capacity
 import org.openjdk.jol.info.GraphLayout
 import java.time.DayOfWeek
@@ -10,7 +9,7 @@ import java.time.Duration
 import java.time.Month
 import java.time.ZonedDateTime
 
-class TemporalSets{
+class TemporalSets(private var temporalSplit: String){
     private val monthsSet: LinkedHashMap<Month, ArrayList<Duration>> = LinkedHashMap()
     private val weekDaySet: LinkedHashMap<DayOfWeek, ArrayList<Duration>> = LinkedHashMap()
     private val hoursSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
@@ -38,24 +37,42 @@ class TemporalSets{
         numberOfDurations += 1
     }
     fun getPrediction(date: ZonedDateTime): Duration {
-        return Duration.ofSeconds(totalDuration / numberOfDurations)
+        var finalDuration: Long = totalDuration / numberOfDurations
         // Months
-//        var monthsDuration: Long = 0
-//        if (monthsSet[date.month] != null){
-//            monthsDuration = monthsSet[date.month]!!.sumOf { it.seconds } / monthsSet[date.month]!!.size
-//        }
-//        // Months
-//        var weekDuration: Long = 0
-//        if (weekDaySet[date.dayOfWeek] != null){
-//            weekDuration = weekDaySet[date.dayOfWeek]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek]!!.size
-//        }
-//        // Hours
-//        var hoursDuration: Long = 0
-//        if (hoursSet[date.hour] != null){
-//            hoursDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
-//        }
-//        val finalDuration: Double = monthsDuration * 0.2 + weekDuration * 0.3 + hoursDuration * 0.5
-//        return Duration.ofSeconds(finalDuration.toLong())
+        if(temporalSplit == "m") {
+            if (monthsSet[date.month] != null) {
+                finalDuration = monthsSet[date.month]!!.sumOf { it.seconds } / monthsSet[date.month]!!.size
+            }
+        }
+        // Weeks of the day
+        if(temporalSplit == "w") {
+            if (weekDaySet[date.dayOfWeek] != null) {
+                finalDuration = weekDaySet[date.dayOfWeek]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek]!!.size
+            }
+        }
+        // Hours
+        if(temporalSplit == "h") {
+            if (hoursSet[date.hour] != null) {
+                finalDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+            }
+        }
+        // All
+        if(temporalSplit == "a") {
+            var monthDuration: Long = totalDuration / numberOfDurations
+            var weekDuration: Long = totalDuration / numberOfDurations
+            var hourDuration: Long = totalDuration / numberOfDurations
+            if (monthsSet[date.month] != null) {
+                monthDuration = monthsSet[date.month]!!.sumOf { it.seconds } / monthsSet[date.month]!!.size
+            }
+            if (weekDaySet[date.dayOfWeek] != null) {
+                weekDuration = weekDaySet[date.dayOfWeek]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek]!!.size
+            }
+            if (hoursSet[date.hour] != null) {
+                hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+            }
+            finalDuration = (monthDuration * 0.2 + weekDuration * 0.3 + hourDuration * 0.5).toLong()
+        }
+        return Duration.ofSeconds(finalDuration)
     }
 }
 
@@ -63,13 +80,14 @@ class TemporalTransitionTableImpl<K, L>(
     topN: Double,
     reducer: TransitionTableDurationReducer,
     storeDuration: Boolean,
+    private val temporalSplit: String
 ) : TransitionTable<K, L>(topN, reducer, storeDuration) {
 
     private val map = LinkedHashMap<K, LinkedHashMap<L, Pair<Double, TemporalSets>>>()
 
     override fun addTransitionInternal(from: K, to: L, weight: Double, duration: Duration, date: ZonedDateTime?) {
         val f = map.getOrPut(from, ::LinkedHashMap)
-        val v = f.getOrDefault(to, Pair(0.0, TemporalSets()))
+        val v = f.getOrDefault(to, Pair(0.0, TemporalSets(temporalSplit)))
         // Add the duration and the date
         if (storeDuration && date != null){
             v.second.addDuration(duration, date)

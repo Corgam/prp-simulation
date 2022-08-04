@@ -1,6 +1,5 @@
 package me.mbe.prp.algorithms.nextnodepred
 
-import me.mbe.prp.algorithms.helpers.AverageReducer
 import me.mbe.prp.algorithms.helpers.TransitionTableDurationReducer
 import me.mbe.prp.algorithms.helpers_temporal.TemporalFusionTransitionTable
 import me.mbe.prp.algorithms.helpers_temporal.TemporalFusionTransitionTableConfig
@@ -9,11 +8,7 @@ import java.time.*
 import java.util.*
 
 val TemporalSetsReducer: TransitionTableDurationReducer = { durations, weight, temporalSets, date ->
-    if (temporalSets != null && date != null){
-        temporalSets.getPrediction(date)
-    }else{
-        Duration.ofSeconds(0)
-    }
+    temporalSets!!.getPrediction(date!!)
 }
 
 // T-FOOM Algorithm from Emil Balitzki's Bachelor's Thesis
