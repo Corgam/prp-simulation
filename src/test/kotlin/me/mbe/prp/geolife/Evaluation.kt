@@ -37,6 +37,8 @@ class Evaluation : EvaluationBase() {
         10 * MEGA_BYTE_PER_SECOND
     )
 
+    private val temporalSplits: List<String> = listOf("a","h","w","m","n")
+
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
         listOf(
             "simpleNetwork_1ns_${it}Nodes_100MB" to
@@ -101,6 +103,21 @@ class Evaluation : EvaluationBase() {
             }
         }
 
+        //AlgT004
+        temporalSplits.forEach { temporalSplit ->
+            noLastNodesOptions.forEach { noLastNodes ->
+                clearOnStartOptions.forEach { clearOnStart ->
+                    aEBPOptions.forEach { aEBP ->
+                        val n = "AlgT004_${noLastNodes}_${clearOnStart}_(${aEBP})_${temporalSplit}"
+                        m[n] = Pair(
+                            { AlgT004(it, noLastNodes, clearOnStart, aEBP, temporalSplit) },
+                            ::Alg013
+                        )
+                    }
+                }
+            }
+        }
+
         //Alg012
         val fTTOptions = cartesianProduct(
             ::FusionTransitionTableConfig,
@@ -116,20 +133,20 @@ class Evaluation : EvaluationBase() {
             }
         }
 
-        //AlgT013 - T-FOOM
-        val fTTTemporalOptions = cartesianProduct(
-            ::TemporalFusionTransitionTableConfig,
-            noLastNodesOptions,
-            setOf(listOf(1), listOf(1, 2), listOf(1, 2, 7)),
-            setOf(listOf(1), listOf(1, 4), listOf(1, 4, 12), listOf(1, 4, 24)),
-        )
-
-        fTTTemporalOptions.forEach { fTT ->
-            aEBPOptions.forEach { aEBP ->
-                val n = "AlgT012_(${fTT})_(${aEBP})"
-                m[n] = Pair({ AlgT012(it, fTT, aEBP) }, ::Alg013)
-            }
-        }
+//        //AlgT013 - T-FOOM
+//        val fTTTemporalOptions = cartesianProduct(
+//            ::TemporalFusionTransitionTableConfig,
+//            noLastNodesOptions,
+//            setOf(listOf(1), listOf(1, 2), listOf(1, 2, 7)),
+//            setOf(listOf(1), listOf(1, 4), listOf(1, 4, 12), listOf(1, 4, 24)),
+//        )
+//
+//        fTTTemporalOptions.forEach { fTT ->
+//            aEBPOptions.forEach { aEBP ->
+//                val n = "AlgT012_(${fTT})_(${aEBP})"
+//                m[n] = Pair({ AlgT012(it, fTT, aEBP) }, ::Alg013)
+//            }
+//        }
 
         return m
     }
@@ -223,7 +240,7 @@ class Evaluation : EvaluationBase() {
             }
         )
 
-        for (conf in listOf("a","h","w","m","n")){
+        for (conf in temporalSplits){
             m["AlgT012_(5_[1, 2, 7]_[1, 4, 24]_${conf})_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M"] = Pair(
                 {
                     AlgT012(
@@ -496,7 +513,6 @@ class Evaluation : EvaluationBase() {
         )
     }
 
-
     @TestFactory
     fun eval_test(): List<DynamicContainer> {
         return generateTests(
@@ -504,12 +520,18 @@ class Evaluation : EvaluationBase() {
                 "simpleNetwork_5min_100Nodes_100MB",
             ),
             listOf(
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_n)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT004_2_true_(0.9_PT5M_true)_h",
+                "AlgT004_2_true_(0.9_PT5M_true)_w",
+                "AlgT004_2_true_(0.9_PT5M_true)_m",
+                "AlgT004_2_true_(0.9_PT5M_true)_a",
+                "AlgT004_2_true_(0.9_PT5M_true)_n",
+                "Alg004_2_true_(0.9_PT5M_true)",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_n)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
             ),
             // forceRun = true
         )
