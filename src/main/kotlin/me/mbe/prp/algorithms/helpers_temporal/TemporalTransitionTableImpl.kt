@@ -4,29 +4,27 @@ import me.mbe.prp.algorithms.helpers.TransitionTable
 import me.mbe.prp.algorithms.helpers.TransitionTableDurationReducer
 import me.mbe.prp.core.Capacity
 import org.openjdk.jol.info.GraphLayout
-import java.time.DayOfWeek
 import java.time.Duration
-import java.time.Month
 import java.time.ZonedDateTime
 
 class TemporalSets(private var temporalSplit: String){
-    private val monthsSet: LinkedHashMap<Month, ArrayList<Duration>> = LinkedHashMap()
-    private val weekDaySet: LinkedHashMap<DayOfWeek, ArrayList<Duration>> = LinkedHashMap()
+    private val monthsSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
+    private val weekDaySet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private val hoursSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private var totalDuration: Long = 0
     private var numberOfDurations: Int = 0
 
     fun addDuration(duration: Duration, date: ZonedDateTime){
         // Month
-        if (monthsSet[date.month] == null){
-            monthsSet[date.month] = ArrayList()
+        if (monthsSet[date.month.value] == null){
+            monthsSet[date.month.value] = ArrayList()
         }
-        monthsSet[date.month]?.add(duration)
+        monthsSet[date.month.value]?.add(duration)
         // Day of the week
-        if (weekDaySet[date.dayOfWeek] == null){
-            weekDaySet[date.dayOfWeek] = ArrayList()
+        if (weekDaySet[date.dayOfWeek.value] == null){
+            weekDaySet[date.dayOfWeek.value] = ArrayList()
         }
-        weekDaySet[date.dayOfWeek]?.add(duration)
+        weekDaySet[date.dayOfWeek.value]?.add(duration)
         // Hours
         if (hoursSet[date.hour] == null){
             hoursSet[date.hour] = ArrayList()
@@ -39,40 +37,172 @@ class TemporalSets(private var temporalSplit: String){
     fun getPrediction(date: ZonedDateTime): Duration {
         var finalDuration: Long = totalDuration / numberOfDurations
         // Months
-        if(temporalSplit == "m") {
-            if (monthsSet[date.month] != null) {
-                finalDuration = monthsSet[date.month]!!.sumOf { it.seconds } / monthsSet[date.month]!!.size
+        if(temporalSplit.contains("m")){
+            if (monthsSet[date.month.value] != null) {
+                finalDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
+            }else if(temporalSplit.contains("N")){
+                val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
+                if (neighboursValue.toInt() != -1){
+                    finalDuration = neighboursValue
+                }
             }
         }
         // Weeks of the day
-        if(temporalSplit == "w") {
-            if (weekDaySet[date.dayOfWeek] != null) {
-                finalDuration = weekDaySet[date.dayOfWeek]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek]!!.size
+        if(temporalSplit.contains("w")) {
+            if (weekDaySet[date.dayOfWeek.value] != null) {
+                finalDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
+            }else if(temporalSplit.contains("N")){
+                val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
+                if (neighboursValue.toInt() != -1){
+                    finalDuration = neighboursValue
+                }
             }
         }
         // Hours
-        if(temporalSplit == "h") {
-            if (hoursSet[date.hour] != null) {
-                finalDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+        if(temporalSplit.contains("h")) {
+            if(temporalSplit.contains("M")){
+                if (hoursSet[date.hour] != null) {
+                    finalDuration = median(hoursSet[date.hour]!!)
+                } else if (temporalSplit.contains("N")) {
+                    val neighboursValue = findClosestNeighboursMedian(hoursSet, date.hour, 24)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
+                }
+            }else {
+                if (hoursSet[date.hour] != null) {
+                    finalDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+                } else if (temporalSplit.contains("N")) {
+                    val neighboursValue = findClosestNeighboursAverage(hoursSet, date.hour, 24)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
+                }
             }
         }
         // All
-        if(temporalSplit == "a") {
-            var monthDuration: Long = totalDuration / numberOfDurations
-            var weekDuration: Long = totalDuration / numberOfDurations
-            var hourDuration: Long = totalDuration / numberOfDurations
-            if (monthsSet[date.month] != null) {
-                monthDuration = monthsSet[date.month]!!.sumOf { it.seconds } / monthsSet[date.month]!!.size
+        if(temporalSplit.contains("a")) {
+            if(temporalSplit.contains("N")){
+                var monthDuration: Long = totalDuration / numberOfDurations
+                var weekDuration: Long = totalDuration / numberOfDurations
+                var hourDuration: Long = totalDuration / numberOfDurations
+                if (monthsSet[date.month.value] != null) {
+                    monthDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
+                }else{
+                    val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
+                    if (neighboursValue.toInt() != -1){
+                        monthDuration = neighboursValue
+                    }
+                }
+                if (weekDaySet[date.dayOfWeek.value] != null) {
+                    weekDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
+                }else{
+                    val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
+                    if (neighboursValue.toInt() != -1){
+                        weekDuration = neighboursValue
+                    }
+                }
+                if (hoursSet[date.hour] != null) {
+                    hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+                }else{
+                    val neighboursValue = findClosestNeighboursAverage(hoursSet, date.hour, 24)
+                    if (neighboursValue.toInt() != -1){
+                        hourDuration = neighboursValue
+                    }
+                }
+                finalDuration = (monthDuration * 0.2 + weekDuration * 0.2 + hourDuration * 0.6).toLong()
+            }else{
+                var monthDuration: Long = totalDuration / numberOfDurations
+                var weekDuration: Long = totalDuration / numberOfDurations
+                var hourDuration: Long = totalDuration / numberOfDurations
+                if (monthsSet[date.month.value] != null) {
+                    monthDuration =
+                        monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
+                }
+                if (weekDaySet[date.dayOfWeek.value] != null) {
+                    weekDuration =
+                        weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
+                }
+                if (hoursSet[date.hour] != null) {
+                    hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
+                }
+                finalDuration = (monthDuration * 0.2 + weekDuration * 0.3 + hourDuration * 0.5).toLong()
             }
-            if (weekDaySet[date.dayOfWeek] != null) {
-                weekDuration = weekDaySet[date.dayOfWeek]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek]!!.size
-            }
-            if (hoursSet[date.hour] != null) {
-                hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
-            }
-            finalDuration = (monthDuration * 0.2 + weekDuration * 0.3 + hourDuration * 0.5).toLong()
         }
+        // Return the final value
         return Duration.ofSeconds(finalDuration)
+    }
+
+    private fun findClosestNeighboursAverage(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
+        // Find left neighbour
+        var i: Int = startingValue
+        var leftNeighbour: Long = -1
+        while (i >= 0){
+            if (set.containsKey(i)){
+                leftNeighbour = set[i]!!.sumOf{it.seconds} / set[i]!!.size
+                break
+            }
+            i--
+        }
+        // Find right neighbour
+        i = startingValue
+        var rightNeighbour: Long = -1
+        while (i <= maxRightValue){
+            if (set.containsKey(i)){
+                rightNeighbour = set[i]!!.sumOf{it.seconds} / set[i]!!.size
+                break
+            }
+            i++
+        }
+        // Returns
+        return if(leftNeighbour.toInt() == -1 && rightNeighbour.toInt() == -1) {
+            -1
+        }else if (leftNeighbour.toInt() == -1){
+            rightNeighbour
+        }else if(rightNeighbour.toInt() == -1){
+            leftNeighbour
+        }else {
+            ((leftNeighbour + rightNeighbour) / 2)
+        }
+    }
+    private fun median(list: java.util.ArrayList<Duration>): Long = list.sorted().let {
+        // Source (modified): https://stackoverflow.com/questions/54187695/median-calculation-in-kotlin
+        if (it.size % 2 == 0)
+            (it[it.size / 2].seconds + it[(it.size - 1) / 2].seconds) / 2
+        else
+            it[it.size / 2].seconds
+    }
+    private fun findClosestNeighboursMedian(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
+        // Find left neighbour
+        var i: Int = startingValue
+        var leftNeighbour: Long = -1
+        while (i >= 0){
+            if (set.containsKey(i)){
+                leftNeighbour = median(set[i]!!)
+                break
+            }
+            i--
+        }
+        // Find right neighbour
+        i = startingValue
+        var rightNeighbour: Long = -1
+        while (i <= maxRightValue){
+            if (set.containsKey(i)){
+                rightNeighbour = median(set[i]!!)
+                break
+            }
+            i++
+        }
+        // Returns
+        return if(leftNeighbour.toInt() == -1 && rightNeighbour.toInt() == -1) {
+            -1
+        }else if (leftNeighbour.toInt() == -1){
+            rightNeighbour
+        }else if(rightNeighbour.toInt() == -1){
+            leftNeighbour
+        }else {
+            ((leftNeighbour + rightNeighbour) / 2)
+        }
     }
 }
 
