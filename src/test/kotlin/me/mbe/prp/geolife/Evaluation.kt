@@ -37,7 +37,7 @@ class Evaluation : EvaluationBase() {
         10 * MEGA_BYTE_PER_SECOND
     )
 
-    private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","m", "mN","X")
+    private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","m", "mN","X", "MEDIAN")
 
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
         listOf(
@@ -531,12 +531,13 @@ class Evaluation : EvaluationBase() {
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_aN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_MEDIAN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
             ),
             // forceRun = true

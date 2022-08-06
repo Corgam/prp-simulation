@@ -11,6 +11,7 @@ class TemporalSets(private var temporalSplit: String){
     private val monthsSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private val weekDaySet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private val hoursSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
+    private var totalDurations: ArrayList<Duration> = ArrayList()
     private var totalDuration: Long = 0
     private var numberOfDurations: Int = 0
 
@@ -31,10 +32,14 @@ class TemporalSets(private var temporalSplit: String){
         }
         hoursSet[date.hour]?.add(duration)
         // Total average
+        totalDurations.add(duration)
         totalDuration += duration.seconds
         numberOfDurations += 1
     }
     fun getPrediction(date: ZonedDateTime): Duration {
+        if(temporalSplit.contains("MEDIAN")){
+            return Duration.ofSeconds(median(totalDurations))
+        }
         var finalDuration: Long = totalDuration / numberOfDurations
         // Months
         if(temporalSplit.contains("m")){
