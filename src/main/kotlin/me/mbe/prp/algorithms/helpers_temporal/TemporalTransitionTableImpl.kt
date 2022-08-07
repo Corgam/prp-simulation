@@ -6,12 +6,14 @@ import me.mbe.prp.core.Capacity
 import org.openjdk.jol.info.GraphLayout
 import java.time.Duration
 import java.time.ZonedDateTime
+import me.mbe.prp.algorithms.helpers_temporal.HoltWinters
 
 class TemporalSets(private var temporalSplit: String){
     private val monthsSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private val weekDaySet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
     private val hoursSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
-    private var totalDurations: ArrayList<Duration> = ArrayList()
+    private var allDurations: ArrayList<Duration> = ArrayList()
+    private var allDurationsLong: ArrayList<Long> = ArrayList()
     private var totalDuration: Long = 0
     private var numberOfDurations: Int = 0
 
@@ -31,14 +33,35 @@ class TemporalSets(private var temporalSplit: String){
             hoursSet[date.hour] = ArrayList()
         }
         hoursSet[date.hour]?.add(duration)
+        // HWES
+        allDurationsLong.add(duration.seconds)
         // Total average
-        totalDurations.add(duration)
+        allDurations.add(duration)
         totalDuration += duration.seconds
         numberOfDurations += 1
     }
     fun getPrediction(date: ZonedDateTime): Duration {
+        if(temporalSplit.contains("HWES")){
+            val array = allDurationsLong.toLongArray()
+            val currentPeriod: Int = allDurations.size/2
+            if (currentPeriod <= 0){
+                return Duration.ofSeconds(totalDuration / numberOfDurations)
+            }
+            val prediction: DoubleArray = HoltWinters.forecast(array, 0.06, 0.98, 0.48, currentPeriod, currentPeriod)
+            var duration = 0.0
+            for(item in prediction){
+                if(item > 0.0){
+                    duration = item
+                    break
+                }
+            }
+            if (duration == 0.0 || duration.isNaN()){
+                return Duration.ofSeconds(totalDuration / numberOfDurations)
+            }
+            return Duration.ofSeconds(duration.toLong())
+        }
         if(temporalSplit.contains("MEDIAN")){
-            return Duration.ofSeconds(median(totalDurations))
+            return Duration.ofSeconds(median(allDurations))
         }
         var finalDuration: Long = totalDuration / numberOfDurations
         // Months
