@@ -6,3 +6,6 @@ __pycache__
 venv
 
 !/**/.gitkeep
+
+geolife_data/Data
+geolife_data_transformed/*.pkl
