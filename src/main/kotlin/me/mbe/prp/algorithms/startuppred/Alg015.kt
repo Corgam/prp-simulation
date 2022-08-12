@@ -62,7 +62,7 @@ class Alg015(
 
         val callBackTime = nextPatternTime.minus(state.network.estimateTransferTime(kg, nextNode))
         if (callBackTime < state.time) {
-            state.setKeygroupMembers(kg, listOf(nextNode))
+            state.setKeygroupMembers(kg, listOf(Pair(nextNode, Duration.ZERO)))
             registerTimeCallback(state.time.plus(clusterPartitionTime), "patternPredictEnd")
         } else {
             registerTimeCallback(callBackTime, "patternPredict")
@@ -82,7 +82,7 @@ class Alg015(
                 state.setKeygroupMembers(kg, listOf())
             }
             "patternPredict" -> {
-                state.setKeygroupMembers(kg, listOf(patternPredictNode!!))
+                state.setKeygroupMembers(kg, listOf(Pair(patternPredictNode!!, Duration.ZERO)))
                 registerTimeCallback(state.time.plus(clusterPartitionTime), "patternPredictEnd")
             }
             else -> throw IllegalArgumentException()

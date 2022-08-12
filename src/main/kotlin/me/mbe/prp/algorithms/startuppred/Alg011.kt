@@ -41,7 +41,7 @@ class Alg011(
 
         lastPosition = Pair(closestNode, state.time)
 
-        state.setKeygroupMembers(kg, listOf(closestNode))
+        state.setKeygroupMembers(kg, listOf(Pair(closestNode, Duration.ZERO)))
         registerTimeCallback(state.time.plus(getCutoff(closestNode)), "shortPauseEnd")
 
     }

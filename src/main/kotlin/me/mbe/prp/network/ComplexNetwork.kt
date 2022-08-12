@@ -129,7 +129,7 @@ class ComplexNetwork : Network {
         return listOf(linkCloudInter, linkInterEdge)
     }
 
-    override fun addKeygroupMember(kg: Keygroup, node: Node) {
+    override fun addKeygroupMember(kg: Keygroup, node: Node, duration: Duration) {
         if (kg.members.containsKey(node.name)) return
 
         transferMap[Pair(kg, node)] = backendNetwork.transfer(kg.name, computeRoute(kg, node))

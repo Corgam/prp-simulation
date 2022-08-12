@@ -51,7 +51,7 @@ class Alg014(
         val pred = predList[0]
 
         if (pred.second < buffer && pred.first!! == closestNode) {
-            state.setKeygroupMembers(kg, listOf(pred.first!!))
+            state.setKeygroupMembers(kg, listOf(Pair(pred.first!!, Duration.ZERO)))
             val cancelAt = state.time + pred.second + buffer.dividedBy(2)
             registerTimeCallback(cancelAt, "predictEnd")
         } else {

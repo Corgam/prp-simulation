@@ -16,7 +16,7 @@ interface Network {
 
     fun estimateTransferTime(kg: Keygroup, dst: Node): Duration
 
-    fun addKeygroupMember(kg: Keygroup, node: Node)
+    fun addKeygroupMember(kg: Keygroup, node: Node, duration: Duration)
 
     fun deleteKeygroupMember(kg: Keygroup, node: Node)
 

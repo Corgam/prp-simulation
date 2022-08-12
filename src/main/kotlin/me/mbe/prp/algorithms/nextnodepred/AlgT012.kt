@@ -33,8 +33,8 @@ class AlgT012(
         val currentNode = state.getClosestNode(p.user)
         val kg = getKeyGroup(state)
 
-        val correctMembers = LinkedList<Node>()
-        correctMembers.add(currentNode)
+        val correctMembers = LinkedList<Pair<Node,Duration>>()
+        correctMembers.add(Pair(currentNode,Duration.ZERO))
 
         if (lastNodes.isEmpty() || currentNode != lastNodes.last()) {
             var date: ZonedDateTime? = null
@@ -67,7 +67,9 @@ class AlgT012(
         )
         // Check if the loading can be started, or it is too late.
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
-
+        if (correctMembers.size > 1){
+            val ok = 1
+        }
         state.setKeygroupMembers(kg, correctMembers)
     }
 

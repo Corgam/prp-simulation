@@ -27,17 +27,17 @@ abstract class AlgExtensionBase(p: AlgorithmParams, protected val eP: AlgExtensi
 
     //todo: maybe use time callback for future load instead of waiting like this
     //todo: use not only the average, but instead the time distribution with percentiles etc.
-    protected open fun getNodesWithinDuration(l: List<Pair<Node?, Duration>>, state: WorldState): List<Node> {
-        if (!storeDuration)
-            return l.mapNotNull { it.first }
-
+    protected open fun getNodesWithinDuration(l: List<Pair<Node?, Duration>>, state: WorldState): List<Pair<Node, Duration>> {
+        if (!storeDuration) {
+            return l.filter { it.first != null }.map { Pair(it.first!!, it.second) }
+        }
         val kg = getKeyGroup(state)
         return l.filter { it.first != null }.filter {
             val durationAfterArrivalLoadingMustStart =
                 it.second - eP.preloadBuffer - state.network.estimateTransferTime(kg, it.first!!)
             val durationSinceArrival = Duration.between(lastSwitchTime, state.time)
             durationAfterArrivalLoadingMustStart <= durationSinceArrival
-        }.map { it.first!! }
+        }.map { Pair(it.first!!, it.second) }
     }
 
 }

@@ -6,6 +6,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.util.*
 
 
 class AlgT004(
@@ -27,8 +28,8 @@ class AlgT004(
         val currentNode = state.getClosestNode(p.user)
         val kg = getKeyGroup(state)
 
-        val correctMembers = ArrayList<Node>()
-        correctMembers.add(currentNode)
+        val correctMembers = LinkedList<Pair<Node,Duration>>()
+        correctMembers.add(Pair(currentNode,Duration.ZERO))
 
         if (lastNodes.isEmpty() || currentNode != lastNodes.last()) {
             // Get the date

@@ -45,7 +45,7 @@ class TemporalSets(private var temporalSplit: String){
     }
     fun getPrediction(date: ZonedDateTime): Duration {
         if(temporalSplit.contains("PER")){
-            return Duration.ofSeconds(percentile(75.0, allDurationsLong))
+            return Duration.ofSeconds(percentile(100.0, allDurationsLong))
         }
         if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()
@@ -96,23 +96,45 @@ class TemporalSets(private var temporalSplit: String){
         var finalDuration: Long = totalDuration / numberOfDurations
         // Months
         if(temporalSplit.contains("m")){
-            if (monthsSet[date.month.value] != null) {
-                finalDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
-            }else if(temporalSplit.contains("N")){
-                val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
-                if (neighboursValue.toInt() != -1){
-                    finalDuration = neighboursValue
+            if(temporalSplit.contains("M")){
+                if (monthsSet[date.month.value] != null) {
+                    finalDuration = median(monthsSet[date.month.value]!!)
+                } else if (temporalSplit.contains("N")) {
+                    val neighboursValue = findClosestNeighboursMedian(monthsSet, date.month.value, 12)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
+                }
+            }else {
+                if (monthsSet[date.month.value] != null) {
+                    finalDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
+                } else if (temporalSplit.contains("N")) {
+                    val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
                 }
             }
         }
         // Weeks of the day
         if(temporalSplit.contains("w")) {
-            if (weekDaySet[date.dayOfWeek.value] != null) {
-                finalDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
-            }else if(temporalSplit.contains("N")){
-                val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
-                if (neighboursValue.toInt() != -1){
-                    finalDuration = neighboursValue
+            if(temporalSplit.contains("M")){
+                if (weekDaySet[date.dayOfWeek.value] != null) {
+                    finalDuration = median(weekDaySet[date.dayOfWeek.value]!!)
+                }else if(temporalSplit.contains("N")){
+                    val neighboursValue = findClosestNeighboursMedian(weekDaySet, date.dayOfWeek.value, 7)
+                    if (neighboursValue.toInt() != -1){
+                        finalDuration = neighboursValue
+                    }
+                }
+            }else{
+                if (weekDaySet[date.dayOfWeek.value] != null) {
+                    finalDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
+                }else if(temporalSplit.contains("N")){
+                    val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
+                    if (neighboursValue.toInt() != -1){
+                        finalDuration = neighboursValue
+                    }
                 }
             }
         }

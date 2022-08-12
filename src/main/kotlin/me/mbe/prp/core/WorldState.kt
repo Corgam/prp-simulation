@@ -1,5 +1,6 @@
 package me.mbe.prp.core
 
+import java.time.Duration
 import java.time.Instant
 
 class WorldState(val network: Network) {
@@ -16,9 +17,10 @@ class WorldState(val network: Network) {
     fun getClosestNode(user: User): Node = network.nodes.getClosestNode(user)
 
     // adds nodes; removes everything else
-    fun setKeygroupMembers(kg: Keygroup, nodes: List<Node>) {
-        nodes.forEach { network.addKeygroupMember(kg, it) }
-        kg.members.values.filter { it.node !in nodes }.forEach { network.deleteKeygroupMember(kg, it.node) }
+    fun setKeygroupMembers(kg: Keygroup, nodes: List<Pair<Node, Duration>>) {
+        nodes.forEach { network.addKeygroupMember(kg, it.first, it.second) }
+        val nodesIDs = nodes.map { it.first }
+        kg.members.values.filter { it.node !in nodesIDs}.forEach { network.deleteKeygroupMember(kg, it.node) }
     }
 
     //for backwards compatibility

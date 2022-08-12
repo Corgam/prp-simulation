@@ -18,13 +18,13 @@ class SimpleNetwork(
         return transferTime
     }
 
-    override fun addKeygroupMember(kg: Keygroup, node: Node) {
+    override fun addKeygroupMember(kg: Keygroup, node: Node, duration: Duration) {
         if (kg.members.contains(node.name)) return
         if (kg.size > node.freeCapacity) throw CapacityError()
 
         node.freeCapacity -= kg.size
 
-        kg.members[node.name] = KeygroupMember(node, time.plus(transferTime))
+        kg.members[node.name] = KeygroupMember(node, time.plus(transferTime).plus(duration))
     }
 
     override fun deleteKeygroupMember(kg: Keygroup, node: Node) {

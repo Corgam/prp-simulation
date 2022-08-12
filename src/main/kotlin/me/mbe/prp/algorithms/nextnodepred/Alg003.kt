@@ -23,8 +23,8 @@ class Alg003(
         val currentNode = state.getClosestNode(p.user)
         val kg = getKeyGroup(state)
 
-        val correctMembers = LinkedList<Node>()
-        correctMembers.add(currentNode)
+        val correctMembers = LinkedList<Pair<Node,Duration>>()
+        correctMembers.add(Pair(currentNode,Duration.ZERO))
 
         if (lastNodes.isEmpty() || currentNode != lastNodes.last()) {
             if (lastNodes.size == noLastNodes) {

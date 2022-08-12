@@ -4,6 +4,7 @@ import me.mbe.prp.algorithms.helpers.AverageReducer
 import me.mbe.prp.algorithms.helpers.VOTransitionTable
 import me.mbe.prp.core.*
 import java.time.Duration
+import java.util.*
 
 
 class Alg004(
@@ -23,8 +24,8 @@ class Alg004(
         val currentNode = state.getClosestNode(p.user)
         val kg = getKeyGroup(state)
 
-        val correctMembers = ArrayList<Node>()
-        correctMembers.add(currentNode)
+        val correctMembers = LinkedList<Pair<Node,Duration>>()
+        correctMembers.add(Pair(currentNode,Duration.ZERO))
 
         if (lastNodes.isEmpty() || currentNode != lastNodes.last()) {
             transitionTable.addTransition(
