@@ -65,8 +65,9 @@ class AlgT012(
             ),
             state.time.atZone(beijingZone)
         )
-
+        // Check if the loading can be started, or it is too late.
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
+
         state.setKeygroupMembers(kg, correctMembers)
     }
 

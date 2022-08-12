@@ -6,7 +6,8 @@ import me.mbe.prp.core.Capacity
 import org.openjdk.jol.info.GraphLayout
 import java.time.Duration
 import java.time.ZonedDateTime
-import me.mbe.prp.algorithms.helpers_temporal.HoltWinters
+import java.util.*
+
 
 class TemporalSets(private var temporalSplit: String){
     private val monthsSet: LinkedHashMap<Int, ArrayList<Duration>> = LinkedHashMap()
@@ -43,6 +44,9 @@ class TemporalSets(private var temporalSplit: String){
         numberOfDurations += 1
     }
     fun getPrediction(date: ZonedDateTime): Duration {
+        if(temporalSplit.contains("PER")){
+            return Duration.ofSeconds(percentile(75.0, allDurationsLong))
+        }
         if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()
             val currentPeriod: Int = allDurationsLong.size/2
@@ -225,6 +229,11 @@ class TemporalSets(private var temporalSplit: String){
             (it[it.size / 2].seconds + it[(it.size - 1) / 2].seconds) / 2
         else
             it[it.size / 2].seconds
+    }
+
+    fun percentile(percentile: Double, items: ArrayList<Long>): Long {
+        items.sort()
+        return items[Math.round(percentile / 100.0 * (items.size - 1)).toInt()]
     }
     private fun findClosestNeighboursMedian(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
         // Find left neighbour
