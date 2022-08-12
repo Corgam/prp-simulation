@@ -30,6 +30,9 @@ class TemporalFusionTransitionTable(
         val todSplitCount: Int  // 1: all together; 4: splits 0-6, 6-12, 12-18, 18-24; 12: split every two hours; 24: split every hour
     )
 
+    private var allDurationsLong: ArrayList<Long> = ArrayList()
+    private var allDurationsLongForNodes: LinkedHashMap<List<Node>, ArrayList<Long>> =  LinkedHashMap<List<Node>, ArrayList<Long>>()
+
     private val transitionTables =
         LinkedHashMap<TTSpecification, TemporalTransitionTableImpl<Triple<List<Node>, Int, Int>, Node?>>()
 
@@ -67,6 +70,15 @@ class TemporalFusionTransitionTable(
                 )
             }
         }
+        // Add duration to HWES array
+        if(from.first.isNotEmpty() && to != null) {
+            allDurationsLong.add(duration.seconds)
+            if (!allDurationsLongForNodes.containsKey(from.first)){
+                allDurationsLongForNodes[from.first] = arrayListOf<Long>()
+            }
+            val durations = allDurationsLongForNodes[from.first]!!
+            durations.add(duration.seconds)
+        }
     }
 
     override fun getNextWithProbAllInternal(
@@ -89,8 +101,33 @@ class TemporalFusionTransitionTable(
             .groupBy { it.node }
             .mapValues {
                 val probSum = it.value.sumOf { p -> p.prob * p.weight }
-                val weightedDurationSum =
+                var weightedDurationSum =
                     it.value.sumOf { p -> p.duration * p.weight } / it.value.sumOf { p -> p.weight }
+                // Replace the value with HWES
+                if (config.temporalSplits.contains("HWESall") || config.temporalSplits.contains("HWESnode")){
+                    var array = allDurationsLong.toLongArray()
+                    if (config.temporalSplits.contains("HWESnode")){
+                        if(allDurationsLongForNodes.containsKey(from.first)){
+                            array = allDurationsLongForNodes[from.first]!!.toLongArray()
+                        }else{
+                            array = ArrayList<Long>().toLongArray()
+                        }
+                    }
+                    val currentPeriod: Int = array.size/2
+                    if (currentPeriod > 0 && array.isNotEmpty()){
+                        val prediction: DoubleArray = HoltWinters.forecast(array, 0.06, 0.98, 0.48, currentPeriod, currentPeriod)
+                        var duration = 0.0
+                        for(item in prediction){
+                            if(item > 0.0){
+                                duration = item
+                                break
+                            }
+                        }
+                        if (duration != 0.0 && !duration.isNaN()){
+                            weightedDurationSum = duration
+                        }
+                    }
+                }
                 Pair(probSum, weightedDurationSum)
             }
             .toList()

@@ -43,7 +43,7 @@ class TemporalSets(private var temporalSplit: String){
     fun getPrediction(date: ZonedDateTime): Duration {
         if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()
-            val currentPeriod: Int = allDurations.size/2
+            val currentPeriod: Int = allDurationsLong.size/2
             if (currentPeriod <= 0){
                 return Duration.ofSeconds(totalDuration / numberOfDurations)
             }
