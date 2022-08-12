@@ -16,6 +16,7 @@ class TemporalSets(private var temporalSplit: String){
     private var allDurationsLong: ArrayList<Long> = ArrayList()
     private var totalDuration: Long = 0
     private var numberOfDurations: Int = 0
+    private var lastAddedStartingDate: ZonedDateTime? = null
 
     fun addDuration(duration: Duration, date: ZonedDateTime){
         // Month
@@ -33,8 +34,9 @@ class TemporalSets(private var temporalSplit: String){
             hoursSet[date.hour] = ArrayList()
         }
         hoursSet[date.hour]?.add(duration)
-        // HWES
+        // HWES data
         allDurationsLong.add(duration.seconds)
+        lastAddedStartingDate = date
         // Total average
         allDurations.add(duration)
         totalDuration += duration.seconds
@@ -48,11 +50,35 @@ class TemporalSets(private var temporalSplit: String){
                 return Duration.ofSeconds(totalDuration / numberOfDurations)
             }
             val prediction: DoubleArray = HoltWinters.forecast(array, 0.06, 0.98, 0.48, currentPeriod, currentPeriod)
+            // Select the next predicted duration
             var duration = 0.0
-            for(item in prediction){
-                if(item > 0.0){
-                    duration = item
-                    break
+            if(temporalSplit.contains("HWESbreaks")){
+                if (lastAddedStartingDate != null){
+                    val totalDifference = Duration.between(lastAddedStartingDate, date).seconds
+                    var currentDifference = 0.0
+                    var i = 0
+                    // Move to the proper time stamp
+                    while(currentDifference < totalDifference){
+                        if (i >= prediction.size){
+                            break
+                        }
+                        val predictedDuration = prediction[i]
+                        if (predictedDuration > 0.0){
+                            currentDifference += predictedDuration
+                        }
+                        i++
+                    }
+                    // Get the final value
+                    if (prediction.isNotEmpty() && i > 0) {
+                        duration = prediction[i - 1]
+                    }
+                }
+            }else{
+                for(item in prediction){
+                    if(item > 0.0){
+                        duration = item
+                        break
+                    }
                 }
             }
             if (duration == 0.0 || duration.isNaN()){

@@ -32,6 +32,7 @@ class TemporalFusionTransitionTable(
 
     private var allDurationsLong: ArrayList<Long> = ArrayList()
     private var allDurationsLongForNodes: LinkedHashMap<List<Node>, ArrayList<Long>> =  LinkedHashMap<List<Node>, ArrayList<Long>>()
+    private var lastAddedStartingDate: ZonedDateTime? = null
 
     private val transitionTables =
         LinkedHashMap<TTSpecification, TemporalTransitionTableImpl<Triple<List<Node>, Int, Int>, Node?>>()
@@ -78,6 +79,7 @@ class TemporalFusionTransitionTable(
             }
             val durations = allDurationsLongForNodes[from.first]!!
             durations.add(duration.seconds)
+            lastAddedStartingDate = date
         }
     }
 
@@ -117,10 +119,33 @@ class TemporalFusionTransitionTable(
                     if (currentPeriod > 0 && array.isNotEmpty()){
                         val prediction: DoubleArray = HoltWinters.forecast(array, 0.06, 0.98, 0.48, currentPeriod, currentPeriod)
                         var duration = 0.0
-                        for(item in prediction){
-                            if(item > 0.0){
-                                duration = item
-                                break
+                        if(config.temporalSplits.contains("breaks")){
+                            if (lastAddedStartingDate != null){
+                                val totalDifference = Duration.between(lastAddedStartingDate, date).seconds
+                                var currentDifference = 0.0
+                                var i = 0
+                                // Move to the proper time stamp
+                                while(currentDifference < totalDifference){
+                                    if (i >= prediction.size){
+                                        break
+                                    }
+                                    val predictedDuration = prediction[i]
+                                    if (predictedDuration > 0.0){
+                                        currentDifference += predictedDuration
+                                    }
+                                    i++
+                                }
+                                // Get the final value
+                                if (prediction.isNotEmpty() && i > 0) {
+                                    duration = prediction[i - 1]
+                                }
+                            }
+                        }else{
+                            for(item in prediction){
+                                if(item > 0.0){
+                                    duration = item
+                                    break
+                                }
                             }
                         }
                         if (duration != 0.0 && !duration.isNaN()){
