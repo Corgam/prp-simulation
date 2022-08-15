@@ -7,7 +7,7 @@ import pandas as pd
 from nodeGrid import Location, getNodeGrid
 node_grid = getNodeGrid(100)
 
-user = "153"
+user = "000"
 
 with open(f"geolife_data_transformed/{user}.pkl", "rb") as f:
             data = pickle.load(f)
