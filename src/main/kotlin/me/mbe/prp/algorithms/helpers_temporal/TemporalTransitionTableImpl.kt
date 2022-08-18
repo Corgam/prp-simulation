@@ -46,6 +46,10 @@ class TemporalSets(private var temporalSplit: String){
     fun getPrediction(date: ZonedDateTime): Duration {
         if(temporalSplit.contains("PER")){
             val percentile: Double = temporalSplit.replace("PER","").toDouble()
+            // Takes into account the odd number of values and calculates the average from the two in the center.
+            if (percentile == 50.0){
+                return Duration.ofSeconds(median(allDurations))
+            }
             return Duration.ofSeconds(percentile(percentile, allDurationsLong))
         }
         if(temporalSplit.contains("HWES")){
@@ -81,9 +85,6 @@ class TemporalSets(private var temporalSplit: String){
                 return Duration.ofSeconds(totalDuration / numberOfDurations)
             }
             return Duration.ofSeconds(duration.toLong())
-        }
-        if(temporalSplit.contains("MEDIAN")){
-            return Duration.ofSeconds(median(allDurations))
         }
         var finalDuration: Long = totalDuration / numberOfDurations
         // Months
@@ -150,55 +151,6 @@ class TemporalSets(private var temporalSplit: String){
                         finalDuration = neighboursValue
                     }
                 }
-            }
-        }
-        // All
-        if(temporalSplit.contains("a")) {
-            if(temporalSplit.contains("N")){
-                var monthDuration: Long = totalDuration / numberOfDurations
-                var weekDuration: Long = totalDuration / numberOfDurations
-                var hourDuration: Long = totalDuration / numberOfDurations
-                if (monthsSet[date.month.value] != null) {
-                    monthDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
-                }else{
-                    val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
-                    if (neighboursValue.toInt() != -1){
-                        monthDuration = neighboursValue
-                    }
-                }
-                if (weekDaySet[date.dayOfWeek.value] != null) {
-                    weekDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
-                }else{
-                    val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
-                    if (neighboursValue.toInt() != -1){
-                        weekDuration = neighboursValue
-                    }
-                }
-                if (hoursSet[date.hour] != null) {
-                    hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
-                }else{
-                    val neighboursValue = findClosestNeighboursAverage(hoursSet, date.hour, 24)
-                    if (neighboursValue.toInt() != -1){
-                        hourDuration = neighboursValue
-                    }
-                }
-                finalDuration = (monthDuration * 0.2 + weekDuration * 0.2 + hourDuration * 0.6).toLong()
-            }else{
-                var monthDuration: Long = totalDuration / numberOfDurations
-                var weekDuration: Long = totalDuration / numberOfDurations
-                var hourDuration: Long = totalDuration / numberOfDurations
-                if (monthsSet[date.month.value] != null) {
-                    monthDuration =
-                        monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
-                }
-                if (weekDaySet[date.dayOfWeek.value] != null) {
-                    weekDuration =
-                        weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
-                }
-                if (hoursSet[date.hour] != null) {
-                    hourDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
-                }
-                finalDuration = (monthDuration * 0.2 + weekDuration * 0.3 + hourDuration * 0.5).toLong()
             }
         }
         // Return the final value

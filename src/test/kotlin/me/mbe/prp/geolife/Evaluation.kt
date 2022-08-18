@@ -37,7 +37,7 @@ class Evaluation : EvaluationBase() {
         10 * MEGA_BYTE_PER_SECOND
     )
 
-    private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","wNM","m", "mN", "mNM","X", "MEDIAN", "HWES",
+    private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","wNM","m", "mN", "mNM","X", "HWES",
         "HWESuser","HWESnode", "PER0","PER10","PER20","PER30","PER40","PER50","PER60","PER70","PER80","PER90","PER100")
 
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
@@ -311,7 +311,7 @@ class Evaluation : EvaluationBase() {
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                  "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_aN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_MEDIAN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //
 //                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",

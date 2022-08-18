@@ -67,9 +67,6 @@ class AlgT012(
         )
         // Check if the loading can be started, or it is too late.
         correctMembers.addAll(getNodesWithinDuration(nextNodes, state))
-        if (correctMembers.size > 1){
-            val ok = 1
-        }
         state.setKeygroupMembers(kg, correctMembers)
     }
 
