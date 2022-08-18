@@ -49,6 +49,7 @@ class TemporalFusionTransitionTable(
         }
     }
 
+    private val weekDaySet: LinkedHashMap<Int, java.util.ArrayList<Duration>> = LinkedHashMap()
     override fun addTransitionInternal(
         from: Triple<List<Node>, DayOfWeek, LocalTime>,
         to: Node?,
@@ -80,6 +81,11 @@ class TemporalFusionTransitionTable(
             val durations = allDurationsLongForNodes[from.first]!!
             durations.add(duration.seconds)
             lastAddedStartingDate = date
+            // User day of the week
+            if (weekDaySet[date!!.dayOfWeek.value] == null){
+                weekDaySet[date.dayOfWeek.value] = java.util.ArrayList()
+            }
+            weekDaySet[date.dayOfWeek.value]?.add(duration)
         }
     }
 
@@ -143,7 +149,18 @@ class TemporalFusionTransitionTable(
                             weightedDurationSum = duration
                         }
                     }
+                }else if (config.temporalSplits.contains("wUSER") ){
+                    var array = allDurationsLong.toLongArray()
+                    if (weekDaySet[date!!.dayOfWeek.value] != null) {
+                        weightedDurationSum = (weekDaySet[date.dayOfWeek.value]!!.sumOf{it.seconds} / weekDaySet[date.dayOfWeek.value]!!.size).toDouble()
+                    }else {
+                        val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
+                        if (neighboursValue.toInt() != -1) {
+                            weightedDurationSum = neighboursValue.toDouble()
+                        }
+                    }
                 }
+
                 Pair(probSum, weightedDurationSum)
             }
             .toList()
@@ -152,6 +169,38 @@ class TemporalFusionTransitionTable(
         val s = q.sumOf { it.second.first }
 
         return q.map { Triple(it.first, Duration.ofSeconds(it.second.second.toLong()), it.second.first / s) }
+    }
+    private fun findClosestNeighboursAverage(set: LinkedHashMap<Int, java.util.ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
+        // Find left neighbour
+        var i: Int = startingValue
+        var leftNeighbour: Long = -1
+        while (i >= 0){
+            if (set.containsKey(i)){
+                leftNeighbour = set[i]!!.sumOf{it.seconds} / set[i]!!.size
+                break
+            }
+            i--
+        }
+        // Find right neighbour
+        i = startingValue
+        var rightNeighbour: Long = -1
+        while (i <= maxRightValue){
+            if (set.containsKey(i)){
+                rightNeighbour = set[i]!!.sumOf{it.seconds} / set[i]!!.size
+                break
+            }
+            i++
+        }
+        // Returns
+        return if(leftNeighbour.toInt() == -1 && rightNeighbour.toInt() == -1) {
+            -1
+        }else if (leftNeighbour.toInt() == -1){
+            rightNeighbour
+        }else if(rightNeighbour.toInt() == -1){
+            leftNeighbour
+        }else {
+            ((leftNeighbour + rightNeighbour) / 2)
+        }
     }
 
     private fun weight(ttS: TTSpecification): Double {
