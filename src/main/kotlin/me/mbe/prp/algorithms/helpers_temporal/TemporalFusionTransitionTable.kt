@@ -106,7 +106,7 @@ class TemporalFusionTransitionTable(
                 var weightedDurationSum =
                     it.value.sumOf { p -> p.duration * p.weight } / it.value.sumOf { p -> p.weight }
                 // Replace the value with HWES
-                if (config.temporalSplits.contains("HWESall") || config.temporalSplits.contains("HWESnode")){
+                if (config.temporalSplits.contains("HWESuser") || config.temporalSplits.contains("HWESnode")){
                     var array = allDurationsLong.toLongArray()
                     if (config.temporalSplits.contains("HWESnode")){
                         if(allDurationsLongForNodes.containsKey(from.first)){
@@ -119,33 +119,24 @@ class TemporalFusionTransitionTable(
                     if (currentPeriod > 0 && array.isNotEmpty()){
                         val prediction: DoubleArray = HoltWinters.forecast(array, 0.06, 0.98, 0.48, currentPeriod, currentPeriod)
                         var duration = 0.0
-                        if(config.temporalSplits.contains("breaks")){
-                            if (lastAddedStartingDate != null){
-                                val totalDifference = Duration.between(lastAddedStartingDate, date).seconds
-                                var currentDifference = 0.0
-                                var i = 0
-                                // Move to the proper time stamp
-                                while(currentDifference < totalDifference){
-                                    if (i >= prediction.size){
-                                        break
-                                    }
-                                    val predictedDuration = prediction[i]
-                                    if (predictedDuration > 0.0){
-                                        currentDifference += predictedDuration
-                                    }
-                                    i++
-                                }
-                                // Get the final value
-                                if (prediction.isNotEmpty() && i > 0) {
-                                    duration = prediction[i - 1]
-                                }
-                            }
-                        }else{
-                            for(item in prediction){
-                                if(item > 0.0){
-                                    duration = item
+                        if (lastAddedStartingDate != null){
+                            val totalDifference = Duration.between(lastAddedStartingDate, date).seconds
+                            var currentDifference = 0.0
+                            var i = 0
+                            // Move to the proper time stamp
+                            while(currentDifference < totalDifference){
+                                if (i >= prediction.size){
                                     break
                                 }
+                                val predictedDuration = prediction[i]
+                                if (predictedDuration > 0.0){
+                                    currentDifference += predictedDuration
+                                }
+                                i++
+                            }
+                            // Get the final value
+                            if (prediction.isNotEmpty() && i > 0) {
+                                duration = prediction[i - 1]
                             }
                         }
                         if (duration != 0.0 && !duration.isNaN()){
