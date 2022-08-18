@@ -47,10 +47,13 @@ class TemporalSets(private var temporalSplit: String){
         // Percentiles
         if(temporalSplit.contains("PCTL")){
             val percentile: Double = temporalSplit.replace("PCTL","").toDouble()
+            if (percentile == 50.0){
+                return Duration.ofSeconds(median(allDurations))
+            }
             return Duration.ofSeconds(percentile(percentile, allDurationsLong))
         }
         // Holt Winter’s Exponential Smoothing
-        if(temporalSplit.contains("HWESdiscretization")){
+        if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()
             val currentPeriod: Int = allDurationsLong.size/2
             if (currentPeriod <= 0){
@@ -106,16 +109,41 @@ class TemporalSets(private var temporalSplit: String){
             var neighboursValue: Long = -1
             if (temporalSplit.contains("PER")) {
                 val perc = temporalSplit.drop(4).toDouble()
-                neighboursValue = findClosestNeighboursPercentile(set, value, maxRightValue, perc)
+                if (set[value] != null) {
+                    if (perc == 50.0){
+                        finalDuration = median(set[value]!!)
+                    }else{
+                        val durs = set[value]!!.map { it.seconds }
+                        finalDuration = percentile(perc, durs as ArrayList<Long>)
+                    }
+                }else{
+                    neighboursValue = findClosestNeighboursPercentile(set, value, maxRightValue, perc)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
+                }
             } else {
-                neighboursValue = findClosestNeighboursAverage(set, value, maxRightValue)
+                if (set[value] != null) {
+                    finalDuration = set[value]!!.sumOf{it.seconds} / set[value]!!.size
+                }else {
+                    neighboursValue = findClosestNeighboursAverage(set, value, maxRightValue)
+                    if (neighboursValue.toInt() != -1) {
+                        finalDuration = neighboursValue
+                    }
+                }
             }
-            if (neighboursValue.toInt() != -1) {
-                finalDuration = neighboursValue
-            }
+
         }
         // Return the final value
         return Duration.ofSeconds(finalDuration)
+    }
+
+    private fun median(list: java.util.ArrayList<Duration>): Long = list.sorted().let {
+        // Source (modified): https://stackoverflow.com/questions/54187695/median-calculation-in-kotlin
+        if (it.size % 2 == 0)
+            (it[it.size / 2].seconds + it[(it.size - 1) / 2].seconds) / 2
+        else
+            it[it.size / 2].seconds
     }
 
     private fun findClosestNeighboursAverage(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
@@ -162,7 +190,11 @@ class TemporalSets(private var temporalSplit: String){
             i--
             if (set.containsKey(i)){
                 val durs = set[i]!!.map { it.seconds }
-                leftNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                if (percentile == 50.0){
+                    leftNeighbour = median(set[i]!!)
+                }else {
+                    leftNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                }
                 break
             }
         }
@@ -173,7 +205,11 @@ class TemporalSets(private var temporalSplit: String){
             i++
             if (set.containsKey(i)){
                 val durs = set[i]!!.map { it.seconds }
-                rightNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                if (percentile == 50.0){
+                    rightNeighbour = median(set[i]!!)
+                }else {
+                    rightNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                }
                 break
             }
         }

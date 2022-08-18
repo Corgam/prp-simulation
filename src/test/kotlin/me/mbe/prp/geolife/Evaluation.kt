@@ -37,7 +37,7 @@ class Evaluation : EvaluationBase() {
         10 * MEGA_BYTE_PER_SECOND
     )
 
-    private val temporalSplits: List<String> = listOf("h","hPER50", "w", "wPER50","m", "mPER50","X", "HWESdiscretization",
+    private val temporalSplits: List<String> = listOf("h","hPER50", "w", "wPER50","m", "mPER50","X", "HWES",
         "HWESuser","HWESnode", "PCTL0","PCTL10","PCTL20","PCTL30","PCTL40","PCTL50","PCTL60","PCTL70","PCTL80","PCTL90","PCTL100")
 
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
@@ -270,7 +270,7 @@ class Evaluation : EvaluationBase() {
     }
 
     @TestFactory
-    fun eval_T_FOMM(): List<DynamicContainer> {
+    fun eval_T_FOMM_basic(): List<DynamicContainer> {
         return generateTests(
             listOf(
                 "simpleNetwork_5min_100Nodes_100MB",
@@ -278,6 +278,16 @@ class Evaluation : EvaluationBase() {
             listOf(
                 // A T-F0MM which does nothing, thus should be the same as normal FOMM
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+            ),
+        )
+    }
+    @TestFactory
+    fun eval_T_FOMM_D(): List<DynamicContainer> {
+        return generateTests(
+            listOf(
+                "simpleNetwork_5min_100Nodes_100MB",
+            ),
+            listOf(
                 // Discretized values
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
@@ -285,16 +295,26 @@ class Evaluation : EvaluationBase() {
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hPER50)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mPER50)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wPER50)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+            ),
+        )
+    }
+    @TestFactory
+    fun eval_T_FOMM_HWES(): List<DynamicContainer> {
+        return generateTests(
+            listOf(
+                "simpleNetwork_5min_100Nodes_100MB",
+            ),
+            listOf(
                 // HWES
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESuser)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
                 "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESnode)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESdiscretization)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWES)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
             ),
         )
     }
 
     @TestFactory
-    fun eval_T_FOMM_percentiles(): List<DynamicContainer> {
+    fun eval_T_FOMM_PCTL(): List<DynamicContainer> {
         return generateTests(
             listOf(
                 "simpleNetwork_5min_100Nodes_100MB",
@@ -305,20 +325,20 @@ class Evaluation : EvaluationBase() {
      }
 
 
-    @TestFactory
-    fun eval008(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "complexNetwork_81Nodes_normalBandwidth_1GB",
-                "complexNetwork_256Nodes_normalBandwidth_1GB",
-                "complexNetwork_625Nodes_normalBandwidth_1GB",
-            ),
-            listOf(
-                "Alg001",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
-            )
-        )
-    }
+//    @TestFactory
+//    fun eval008(): List<DynamicContainer> {
+//        return generateTests(
+//            listOf(
+//                "complexNetwork_81Nodes_normalBandwidth_1GB",
+//                "complexNetwork_256Nodes_normalBandwidth_1GB",
+//                "complexNetwork_625Nodes_normalBandwidth_1GB",
+//            ),
+//            listOf(
+//                "Alg001",
+//                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
+//            )
+//        )
+//    }
 
 
 }
