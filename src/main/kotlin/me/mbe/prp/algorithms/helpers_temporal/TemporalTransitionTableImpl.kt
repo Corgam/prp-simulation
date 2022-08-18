@@ -44,14 +44,15 @@ class TemporalSets(private var temporalSplit: String){
         numberOfDurations += 1
     }
     fun getPrediction(date: ZonedDateTime): Duration {
-        if(temporalSplit.contains("PER")){
-            val percentile: Double = temporalSplit.replace("PER","").toDouble()
-            // Takes into account the odd number of values and calculates the average from the two in the center.
+        // Percentiles
+        if(temporalSplit.contains("PCTL")){
+            val percentile: Double = temporalSplit.replace("PCTL","").toDouble()
             if (percentile == 50.0){
                 return Duration.ofSeconds(median(allDurations))
             }
             return Duration.ofSeconds(percentile(percentile, allDurationsLong))
         }
+        // Holt Winter’s Exponential Smoothing
         if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()
             val currentPeriod: Int = allDurationsLong.size/2
@@ -87,74 +88,62 @@ class TemporalSets(private var temporalSplit: String){
             return Duration.ofSeconds(duration.toLong())
         }
         var finalDuration: Long = totalDuration / numberOfDurations
-        // Months
-        if(temporalSplit.contains("m")){
-            if(temporalSplit.contains("M")){
-                if (monthsSet[date.month.value] != null) {
-                    finalDuration = median(monthsSet[date.month.value]!!)
-                } else if (temporalSplit.contains("N")) {
-                    val neighboursValue = findClosestNeighboursMedian(monthsSet, date.month.value, 12)
-                    if (neighboursValue.toInt() != -1) {
-                        finalDuration = neighboursValue
-                    }
-                }
-            }else {
-                if (monthsSet[date.month.value] != null) {
-                    finalDuration = monthsSet[date.month.value]!!.sumOf { it.seconds } / monthsSet[date.month.value]!!.size
-                } else if (temporalSplit.contains("N")) {
-                    val neighboursValue = findClosestNeighboursAverage(monthsSet, date.month.value, 12)
-                    if (neighboursValue.toInt() != -1) {
-                        finalDuration = neighboursValue
-                    }
-                }
-            }
+        // Discretized Values
+        var set: LinkedHashMap<Int, ArrayList<Duration>>? = null
+        var value: Int? = null
+        var maxRightValue: Int? = null
+        if(temporalSplit.contains("m")) {
+            set = monthsSet
+            value = date.month.value
+            maxRightValue = 12
+        }else if(temporalSplit.contains("w")){
+            set = weekDaySet
+            value = date.dayOfWeek.value
+            maxRightValue = 7
+        }else if(temporalSplit.contains("h")){
+            set = hoursSet
+            value = date.hour
+            maxRightValue = 24
         }
-        // Weeks of the day
-        if(temporalSplit.contains("w")) {
-            if(temporalSplit.contains("M")){
-                if (weekDaySet[date.dayOfWeek.value] != null) {
-                    finalDuration = median(weekDaySet[date.dayOfWeek.value]!!)
-                }else if(temporalSplit.contains("N")){
-                    val neighboursValue = findClosestNeighboursMedian(weekDaySet, date.dayOfWeek.value, 7)
-                    if (neighboursValue.toInt() != -1){
-                        finalDuration = neighboursValue
+        if (set != null && value != null && maxRightValue != null){
+            var neighboursValue: Long = -1
+            if (temporalSplit.contains("PER")) {
+                val perc = temporalSplit.drop(4).toDouble()
+                if (set[value] != null) {
+                    if (perc == 50.0){
+                        finalDuration = median(set[value]!!)
+                    }else{
+                        val durs = set[value]!!.map { it.seconds }
+                        finalDuration = percentile(perc, durs as ArrayList<Long>)
                     }
-                }
-            }else{
-                if (weekDaySet[date.dayOfWeek.value] != null) {
-                    finalDuration = weekDaySet[date.dayOfWeek.value]!!.sumOf { it.seconds } / weekDaySet[date.dayOfWeek.value]!!.size
-                }else if(temporalSplit.contains("N")){
-                    val neighboursValue = findClosestNeighboursAverage(weekDaySet, date.dayOfWeek.value, 7)
-                    if (neighboursValue.toInt() != -1){
-                        finalDuration = neighboursValue
-                    }
-                }
-            }
-        }
-        // Hours
-        if(temporalSplit.contains("h")) {
-            if(temporalSplit.contains("M")){
-                if (hoursSet[date.hour] != null) {
-                    finalDuration = median(hoursSet[date.hour]!!)
-                } else if (temporalSplit.contains("N")) {
-                    val neighboursValue = findClosestNeighboursMedian(hoursSet, date.hour, 24)
+                }else{
+                    neighboursValue = findClosestNeighboursPercentile(set, value, maxRightValue, perc)
                     if (neighboursValue.toInt() != -1) {
                         finalDuration = neighboursValue
                     }
                 }
-            }else {
-                if (hoursSet[date.hour] != null) {
-                    finalDuration = hoursSet[date.hour]!!.sumOf { it.seconds } / hoursSet[date.hour]!!.size
-                } else if (temporalSplit.contains("N")) {
-                    val neighboursValue = findClosestNeighboursAverage(hoursSet, date.hour, 24)
+            } else {
+                if (set[value] != null) {
+                    finalDuration = set[value]!!.sumOf{it.seconds} / set[value]!!.size
+                }else {
+                    neighboursValue = findClosestNeighboursAverage(set, value, maxRightValue)
                     if (neighboursValue.toInt() != -1) {
                         finalDuration = neighboursValue
                     }
                 }
             }
+
         }
         // Return the final value
         return Duration.ofSeconds(finalDuration)
+    }
+
+    private fun median(list: java.util.ArrayList<Duration>): Long = list.sorted().let {
+        // Source (modified): https://stackoverflow.com/questions/54187695/median-calculation-in-kotlin
+        if (it.size % 2 == 0)
+            (it[it.size / 2].seconds + it[(it.size - 1) / 2].seconds) / 2
+        else
+            it[it.size / 2].seconds
     }
 
     private fun findClosestNeighboursAverage(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
@@ -189,38 +178,40 @@ class TemporalSets(private var temporalSplit: String){
             ((leftNeighbour + rightNeighbour) / 2)
         }
     }
-    private fun median(list: java.util.ArrayList<Duration>): Long = list.sorted().let {
-        // Source (modified): https://stackoverflow.com/questions/54187695/median-calculation-in-kotlin
-        if (it.size % 2 == 0)
-            (it[it.size / 2].seconds + it[(it.size - 1) / 2].seconds) / 2
-        else
-            it[it.size / 2].seconds
-    }
-
     fun percentile(percentile: Double, items: ArrayList<Long>): Long {
         items.sort()
         return items[Math.round(percentile / 100.0 * (items.size - 1)).toInt()]
     }
-    private fun findClosestNeighboursMedian(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int): Long {
+    private fun findClosestNeighboursPercentile(set: LinkedHashMap<Int, ArrayList<Duration>>, startingValue: Int, maxRightValue: Int, percentile: Double): Long {
         // Find left neighbour
         var i: Int = startingValue
         var leftNeighbour: Long = -1
-        while (i >= 0){
+        while (i > 0){
+            i--
             if (set.containsKey(i)){
-                leftNeighbour = median(set[i]!!)
+                val durs = set[i]!!.map { it.seconds }
+                if (percentile == 50.0){
+                    leftNeighbour = median(set[i]!!)
+                }else {
+                    leftNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                }
                 break
             }
-            i--
         }
         // Find right neighbour
         i = startingValue
         var rightNeighbour: Long = -1
-        while (i <= maxRightValue){
+        while (i < maxRightValue){
+            i++
             if (set.containsKey(i)){
-                rightNeighbour = median(set[i]!!)
+                val durs = set[i]!!.map { it.seconds }
+                if (percentile == 50.0){
+                    rightNeighbour = median(set[i]!!)
+                }else {
+                    rightNeighbour = percentile(percentile, durs as ArrayList<Long>)
+                }
                 break
             }
-            i++
         }
         // Returns
         return if(leftNeighbour.toInt() == -1 && rightNeighbour.toInt() == -1) {
