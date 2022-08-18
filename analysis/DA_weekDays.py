@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from nodeGrid import Location, getNodeGrid
 node_grid = getNodeGrid(100)
 
-with open("geolife_data_transformed/153.pkl", "rb") as f:
+with open("geolife_data_transformed/000.pkl", "rb") as f:
             data = pickle.load(f)
 
 training_data_all = list()

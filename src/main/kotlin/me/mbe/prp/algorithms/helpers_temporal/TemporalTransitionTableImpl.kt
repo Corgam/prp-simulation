@@ -45,7 +45,8 @@ class TemporalSets(private var temporalSplit: String){
     }
     fun getPrediction(date: ZonedDateTime): Duration {
         if(temporalSplit.contains("PER")){
-            return Duration.ofSeconds(percentile(100.0, allDurationsLong))
+            val percentile: Double = temporalSplit.replace("PER","").toDouble()
+            return Duration.ofSeconds(percentile(percentile, allDurationsLong))
         }
         if(temporalSplit.contains("HWES")){
             val array = allDurationsLong.toLongArray()

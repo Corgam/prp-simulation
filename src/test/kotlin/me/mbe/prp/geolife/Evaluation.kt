@@ -38,7 +38,7 @@ class Evaluation : EvaluationBase() {
     )
 
     private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","wNM","m", "mN", "mNM","X", "MEDIAN", "HWES",
-        "HWESall","HWESnode", "HWESbreaks","HWESallbreaks","HWESnodebreaks", "PER")
+        "HWESall","HWESnode", "HWESbreaks","HWESallbreaks","HWESnodebreaks", "PER0","PER10","PER20","PER30","PER40","PER50","PER60","PER70","PER80","PER90","PER100")
 
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
         listOf(
@@ -521,7 +521,7 @@ class Evaluation : EvaluationBase() {
                 "simpleNetwork_5min_100Nodes_100MB",
             ),
             listOf(
-                  "Alg000",
+//                  "Alg000",
 //                "AlgT004_2_true_(0.9_PT5M_true)_hn",
 //                "AlgT004_2_true_(0.9_PT5M_true)_h",
 //                "AlgT004_2_true_(0.9_PT5M_true)_w",
@@ -545,10 +545,10 @@ class Evaluation : EvaluationBase() {
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_aN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_MEDIAN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESall)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESallbreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESnode)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESnodebreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWES)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESbreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
 //                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
@@ -557,5 +557,15 @@ class Evaluation : EvaluationBase() {
         )
     }
 
+    @TestFactory
+    fun eval_test_percentiles(): List<DynamicContainer> {
+        return generateTests(
+            listOf(
+                "simpleNetwork_5min_100Nodes_100MB",
+            ),
+            listOf("0","10","20","30","40","50","60","70","80","90","100")
+                .map { "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER${it})_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M" }
+        )
+     }
 }
 
