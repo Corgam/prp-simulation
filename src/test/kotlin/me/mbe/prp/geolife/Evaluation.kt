@@ -38,7 +38,7 @@ class Evaluation : EvaluationBase() {
     )
 
     private val temporalSplits: List<String> = listOf("a", "aN","h","hN","hNM", "w", "wN","wNM","m", "mN", "mNM","X", "MEDIAN", "HWES",
-        "HWESall","HWESnode", "HWESbreaks","HWESallbreaks","HWESnodebreaks", "PER0","PER10","PER20","PER30","PER40","PER50","PER60","PER70","PER80","PER90","PER100")
+        "HWESuser","HWESnode", "PER0","PER10","PER20","PER30","PER40","PER50","PER60","PER70","PER80","PER90","PER100")
 
     override val networkSetups = listOf(10.pow(2), 15.pow(2), 20.pow(2), 25.pow(2), 30.pow(2)).flatMap {
         listOf(
@@ -275,126 +275,61 @@ class Evaluation : EvaluationBase() {
         return generateTests(
             listOf(
                 "simpleNetwork_5min_100Nodes_100MB",
-                "simpleNetwork_5min_400Nodes_100MB",
-                "simpleNetwork_5min_900Nodes_100MB",
             ),
-            listOf("Alg001"),
-        )
-    }
-
-    @TestFactory
-    fun baseline_2(): List<DynamicContainer> {
-        return generateTests(
             listOf(
-                "simpleNetwork_5min_100Nodes_100MB",
+                "Alg000",
+                "Alg001",
+                "Alg004_5_true_(0.9_PT5M_true)",
+                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
             ),
-            listOf("Alg000"),
         )
     }
 
-    @TestFactory
-    fun eval001(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            1.rangeTo(5).flatMap { noLastNodes ->
-                listOf(
-                    "Alg003_${noLastNodes}_true_(1.0_PT24H_false)", "Alg003_${noLastNodes}_false_(1.0_PT24H_false)",
-                    "Alg004_${noLastNodes}_true_(1.0_PT24H_false)", "Alg004_${noLastNodes}_false_(1.0_PT24H_false)",
-                )
-            }
-        )
-    }
 
     @TestFactory
-    fun eval002(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            listOf("0.8", "0.9", "0.95", "0.98", "1.0", "2.0").flatMap { topN ->
-                listOf("Alg004_2_true_(${topN}_PT24H_false)", "Alg004_2_true_(${topN}_PT24H_true)")
-            },
-        )
-    }
-
-    @TestFactory
-    fun eval003(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            listOf(
-                Duration.ZERO,
-                Duration.ofMinutes(1),
-                Duration.ofMinutes(5),
-                Duration.ofMinutes(10),
-                MAX_DURATION
-            ).flatMap { preloadBuffer ->
-                listOf(
-                    "Alg004_2_true_(0.9_${preloadBuffer}_true)",
-                    "Alg004_2_true_(0.95_${preloadBuffer}_true)"
-                )
-            },
-        )
-    }
-
-    @TestFactory
-    fun eval004(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                10.pow(2),
-                15.pow(2),
-                20.pow(2),
-                25.pow(2),
-                30.pow(2),
-            ).flatMap { numNodes -> listOf("simpleNetwork_1ns_${numNodes}Nodes_100MB") },
-            listOf("Alg004_2_true_(0.9_PT24H_true)"),
-        )
-    }
-
-    @TestFactory
-    fun eval005(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            1.rangeTo(5).map { i -> "Alg004_${i}_true_(0.9_PT24H_true)" }
-        )
-    }
-
-    @TestFactory
-    fun eval006(): List<DynamicContainer> {
-        return emptyList() //placeholder
-    }
-
-    @TestFactory
-    fun eval007(): List<DynamicContainer> {
-
-        val historySizeFix = 5
-        val dowFix = listOf(1)
-        val todFix = listOf(1)
-
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            emptyList<FusionTransitionTableConfig>()
-                .concat(1.rangeTo(5).map { historySize ->
-                    FusionTransitionTableConfig(historySize, dowFix, todFix)
-                })
-                .concat(setOf(listOf(1), listOf(1, 2), listOf(1, 2, 7)).map { dowSplit ->
-                    FusionTransitionTableConfig(historySizeFix, dowSplit, todFix)
-                })
-                .concat(setOf(listOf(1), listOf(1, 4), listOf(1, 4, 12), listOf(1, 4, 24)).map { todSplit ->
-                    FusionTransitionTableConfig(historySizeFix, dowFix, todSplit)
-                })
-                .map { fTT -> "Alg012_(${fTT})_(0.9_PT24H_true)" }
-        )
-    }
-
-    @TestFactory
-    fun eval007_5(): List<DynamicContainer> {
+    fun eval_T_FOMM(): List<DynamicContainer> {
         return generateTests(
             listOf(
                 "simpleNetwork_5min_100Nodes_100MB",
             ),
             listOf(
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
-            )
+                // T-FOMM without any changes, the results should be as in normal FOMM
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                // HWES
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWES)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESuser)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESnode)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+                // Discretized values
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                  "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_aN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_MEDIAN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+//
+//                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+            ),
+            // forceRun = true
         )
     }
+
+    @TestFactory
+    fun eval_T_FOMM_percentiles(): List<DynamicContainer> {
+        return generateTests(
+            listOf(
+                "simpleNetwork_5min_100Nodes_100MB",
+            ),
+            listOf("0","10","20","30","40","50","60","70","80","90","100")
+                .map { "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER${it})_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M" }
+        )
+     }
 
     @TestFactory
     fun eval008(): List<DynamicContainer> {
@@ -410,162 +345,5 @@ class Evaluation : EvaluationBase() {
             )
         )
     }
-
-    @TestFactory
-    fun eval009(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "complexNetwork_81Nodes_normalBandwidth_1GB",
-            ),
-            listOf(
-                "Alg001",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT0S_true)",
-            )
-        )
-    }
-
-    @TestFactory
-    fun eval010(): List<DynamicContainer> {
-        return generateTests(listOf("simpleNetwork_5min_100Nodes_100MB"), listOf("Alg001"))
-    }
-
-    @TestFactory
-    fun eval011(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            listOf(
-                "Alg001",
-
-                "Alg011_false_false_0.5_PT10M",
-                "Alg011_false_false_0.5_PT30M",
-                "Alg011_false_false_0.5_PT1H",
-
-                "Alg011_false_true_0.5_PT10M",
-                "Alg011_false_true_0.5_PT30M",
-                "Alg011_false_true_0.5_PT1H",
-
-                "Alg014_(PT20M_0.5)_(1_[1, 2, 7]_[1, 4, 24])",
-                "Alg014_(PT25M_0.5)_(1_[1, 2, 7]_[1, 4, 24])",
-                "Alg014_(PT30M_0.5)_(1_[1, 2, 7]_[1, 4, 24])",
-                "Alg014_(PT35M_0.5)_(1_[1, 2, 7]_[1, 4, 24])",
-
-                "Alg011_true_false_0.5_PT10M",
-            )
-        )
-    }
-
-    @TestFactory
-    fun eval012(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "simpleNetwork_5min_100Nodes_100MB",
-                "simpleNetwork_5min_400Nodes_100MB",
-                "complexNetwork_81Nodes_normalBandwidth_1GB",
-                "complexNetwork_625Nodes_normalBandwidth_1GB",
-            ),
-            listOf(
-                "Alg001",
-
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)",
-                "Alg011_true_false_0.5_PT10M",
-                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-            )
-        )
-    }
-
-    @TestFactory
-    fun eval014(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "simpleNetwork_5min_100Nodes_100MB",
-
-                ),
-            listOf(
-                "Alg001",
-                "Alg015_PT30M",
-                "Alg015_PT1H"
-            )
-        )
-    }
-
-    @TestFactory
-    fun eval015(): List<DynamicContainer> {
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            listOf(
-                "Alg014_(PT25M_0.5)_(1_[1, 2, 7]_[1, 4, 24])",
-            )
-        )
-    }
-
-    @TestFactory
-    fun eval016(): List<DynamicContainer> {
-
-        return generateTests(
-            listOf("simpleNetwork_5min_100Nodes_100MB"),
-            cartesianProduct(
-                ::FusionTransitionTableConfig,
-                setOf(1, 2, 3, 4, 5),
-                setOf(listOf(1), listOf(1, 2), listOf(1, 2, 7)),
-                setOf(listOf(1), listOf(1, 4), listOf(1, 4, 12), listOf(1, 4, 24)),
-            ).map { fTT -> "Alg012_(${fTT})_(0.9_PT24H_true)" }
-        )
-    }
-
-    @TestFactory
-    fun eval_test(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "simpleNetwork_5min_100Nodes_100MB",
-            ),
-            listOf(
-//                  "Alg000",
-//                "AlgT004_2_true_(0.9_PT5M_true)_hn",
-//                "AlgT004_2_true_(0.9_PT5M_true)_h",
-//                "AlgT004_2_true_(0.9_PT5M_true)_w",
-//                "AlgT004_2_true_(0.9_PT5M_true)_m",
-//                "AlgT004_2_true_(0.9_PT5M_true)_a",
-//                "AlgT004_2_true_(0.9_PT5M_true)_n",
-//                "AlgT004_2_true_(0.9_PT5M_true)_hN",
-//                "AlgT004_2_true_(0.9_PT5M_true)_HWES",
-//                "AlgT004_2_true_(0.9_PT5M_true)_HWESall",
-//                "Alg004_5_true_(0.9_PT5M_true)",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_h)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_m)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_w)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_a)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_hNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_mN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                  "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_wNM)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_aN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_X)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_MEDIAN)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESall)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESallbreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESnodebreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWES)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESbreaks)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-//                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
-            ),
-            // forceRun = true
-        )
-    }
-
-    @TestFactory
-    fun eval_test_percentiles(): List<DynamicContainer> {
-        return generateTests(
-            listOf(
-                "simpleNetwork_5min_100Nodes_100MB",
-            ),
-            listOf("0","10","20","30","40","50","60","70","80","90","100")
-                .map { "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_PER${it})_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M" }
-        )
-     }
 }
 
