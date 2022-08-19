@@ -109,8 +109,9 @@ class ComplexNetwork : Network {
         val completedTransfers = backendNetwork.advance(time, d)
         completedTransfers.forEach {
             val kgName = it.item.name
+            val extraDuration = it.extraDuration
             keyGroups[kgName]!!.members[it.via.last().nodeB.name]!!.availableFrom =
-                it.via.last().nodeB.fullyAvailableItems[kgName]!!.availableFrom
+                it.via.last().nodeB.fullyAvailableItems[kgName]!!.availableFrom + extraDuration
         }
     }
 
@@ -132,7 +133,7 @@ class ComplexNetwork : Network {
     override fun addKeygroupMember(kg: Keygroup, node: Node, duration: Duration) {
         if (kg.members.containsKey(node.name)) return
 
-        transferMap[Pair(kg, node)] = backendNetwork.transfer(kg.name, computeRoute(kg, node))
+        transferMap[Pair(kg, node)] = backendNetwork.transfer(kg.name, computeRoute(kg, node), duration)
         kg.members[node.name] = KeygroupMember(node, Instant.MAX)
     }
 

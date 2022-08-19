@@ -325,20 +325,20 @@ class Evaluation : EvaluationBase() {
      }
 
 
-//    @TestFactory
-//    fun eval008(): List<DynamicContainer> {
-//        return generateTests(
-//            listOf(
-//                "complexNetwork_81Nodes_normalBandwidth_1GB",
-//                "complexNetwork_256Nodes_normalBandwidth_1GB",
-//                "complexNetwork_625Nodes_normalBandwidth_1GB",
-//            ),
-//            listOf(
-//                "Alg001",
-//                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
-//            )
-//        )
-//    }
+    @TestFactory
+    fun eval008(): List<DynamicContainer> {
+        return generateTests(
+            listOf(
+                "complexNetwork_81Nodes_normalBandwidth_1GB",
+                "complexNetwork_256Nodes_normalBandwidth_1GB",
+                "complexNetwork_625Nodes_normalBandwidth_1GB",
+            ),
+            listOf(
+                "Alg012_(5_[1, 2, 7]_[1, 4, 24])_(0.9_PT24H_true)",
+                "AlgT012_(5_[1, 2, 7]_[1, 4, 24]_HWESuser)_(0.9_PT5M_true)_Alg011_true_false_0.5_PT10M",
+            )
+        )
+    }
 
 
 }

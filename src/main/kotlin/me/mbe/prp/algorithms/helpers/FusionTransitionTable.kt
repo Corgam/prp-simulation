@@ -129,7 +129,7 @@ class FusionTransitionTable(
     }
 
     override fun computeSize(): Capacity {
-        return GraphLayout.parseInstance(transitionTables).totalSize()
+        return 0//GraphLayout.parseInstance(transitionTables).totalSize()
     }
 }
 

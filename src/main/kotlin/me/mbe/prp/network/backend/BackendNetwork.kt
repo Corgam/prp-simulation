@@ -14,7 +14,7 @@ class BackendNetwork(private val simulationInterval: Duration = Duration.ofSecon
     private val ongoingTransfersLinks: MutableMap<BackendLink, Int> = LinkedHashMap()
     private val ongoingTransfers: MutableList<Transfer> = LinkedList()
 
-    class Transfer(val item: BackendItem, val via: List<BackendLink>, var progress: Capacity = 0)
+    class Transfer(val item: BackendItem, val via: List<BackendLink>, var progress: Capacity = 0, var extraDuration: Duration)
 
     val linkFinder = LinkedHashMap<Pair<BackendNode, BackendNode>, BackendLink>()
 
@@ -129,9 +129,9 @@ class BackendNetwork(private val simulationInterval: Duration = Duration.ofSecon
         t.via.last().nodeB.reservedCapacity -= t.item.size
     }
 
-    fun transfer(itemName: String, vararg via: BackendLink): Transfer = transfer(itemName, via.asList())
+    fun transfer(itemName: String, vararg via: BackendLink, duration: Duration): Transfer = transfer(itemName, via.asList(), duration)
 
-    fun transfer(itemName: String, via: List<BackendLink>): Transfer {
+    fun transfer(itemName: String, via: List<BackendLink>, extraDuration: Duration): Transfer {
         checkValidTransfer(itemName, via)
 
         val item = via.first().nodeA.fullyAvailableItems[itemName]!!.item
@@ -145,6 +145,7 @@ class BackendNetwork(private val simulationInterval: Duration = Duration.ofSecon
         val transfer = Transfer(
             via.first().nodeA.fullyAvailableItems[itemName]!!.item,
             via,
+            extraDuration = extraDuration
         )
 
         via.first().nodeA.fullyAvailableItems[itemName]!!.noTransfersInc()

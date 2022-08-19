@@ -41,7 +41,7 @@ class TestNetwork {
 
         println(n.estimateTransferTime("1", link_1_2, link_2_3))
 
-        n.transfer("1", link_1_2, link_2_3)
+        n.transfer("1", listOf(link_1_2, link_2_3), Duration.ZERO)
         n.advance(Instant.MIN, Duration.ofSeconds(5))
 
         println()
