@@ -3,6 +3,7 @@ import datetime
 import pickle
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 from nodeGrid import Location, getNodeGrid
 node_grid = getNodeGrid(100)
@@ -50,10 +51,11 @@ timeseries = df["duration"]
 rolmean = pd.Series(timeseries).rolling(window=30).mean() 
 plt.plot(timeseries, color= "lightskyblue",label= "Raw Trajectory Data")
 plt.plot(rolmean, label='Rolling Mean (x30)')
-plt.title(f'User{user}\'s Trajectory Data')
 av = sum(timeseries)/len(timeseries)
 plt.axhline(y = av, color = "r", label= "Arithmetic Mean")
 plt.ylabel("Duration (s)")
 plt.legend(fontsize=10, title_fontsize=15)
+plt.rcParams["font.size"] = "60"
+plt.yticks(np.arange(0,50000,1000))
 plt.show()
 debug_stop = 1
