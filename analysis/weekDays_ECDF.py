@@ -1,13 +1,30 @@
 
 import datetime
 import pickle
-from statistics import mean
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas
 
 from nodeGrid import Location, getNodeGrid
 node_grid = getNodeGrid(100)
+
+def dayValue2String(value: int):
+    match value:
+        case 0:
+            return "Sunday"
+        case 1:
+            return "Monday"   
+        case 2:
+            return "Tuesday"
+        case 3:
+            return "Wednesday"   
+        case 4:
+            return "Thursday"
+        case 5:
+            return "Friday"
+        case 6:
+            return "Saturday"  
 
 with open("geolife_data_transformed/000.pkl", "rb") as f:
             data = pickle.load(f)
@@ -24,7 +41,7 @@ for i in range(1,len(data["locations"])-1):
     node_id_new = node_grid.getClosestNodeID(Location(data["locations"][i+1]["lat"],float(data["locations"][i+1]["long"])))
     if node_id_old != node_id_new:
         if  node_id_oldest is not None:
-            training_data_all.append({'dayOfTheWeek': data["locations"][i]["time"].toordinal()%7, 'duration': float(node_change_total_time)})
+            training_data_all.append({'dayOfTheWeek': dayValue2String(data["locations"][i]["time"].toordinal()%7), 'duration': float(node_change_total_time)})
             id = node_id_oldest + "," + node_id_old
         node_change_total_time = 0
         node_id_oldest = node_id_old
@@ -35,32 +52,15 @@ for i in range(1,len(data["locations"])-1):
 x2 = [item["dayOfTheWeek"] for item in training_data_all]
 y = [item["duration"] for item in training_data_all]
 
-x_averages = [[],[],[],[],[],[],[]]
-for item in training_data_all:
-    day = item["dayOfTheWeek"]
-    x_averages[day].append(item["duration"])
-
-average_points_x = []
-average_points_y = []
-for av in x_averages:
-    if len(av) != 0:
-        average_points_x.append(x_averages.index(av))
-        average_points_y.append(mean(av))
-
 data = list(map(list, list(zip(x2,y))))
-new_data = []
-for item in data:
-    if item[0] == 1:
-        new_data.append(item)
-df = pandas.DataFrame(data, columns=["day","duration"])
+df = pandas.DataFrame(data, columns=["Day","duration"])
 df.head()
 df = df[df.duration < df.duration.quantile(0.99)]
-sns.ecdfplot(df, x="duration", hue="day")
-# plt.scatter(x,y, label="Durations Data")
-# av = sum(y)/len(y)
-# plt.axhline(y = av, color = "r", label= "Arithmetic Mean")
-# plt.ylabel("Duration (s)")
-# plt.scatter(average_points_x, average_points_y, color = "r", label= "Day's Mean")
-# plt.legend(fontsize=10, title_fontsize=15)
-# plt.show()
+sns.ecdfplot(df, x="duration", hue="Day")
+av = df["duration"].mean()
+plt.axvline(x = av, color = "r", label= "Arithmetic Mean")
+plt.yticks(np.arange(0,1,0.1))
+plt.xticks(np.arange(0,10000,500))
+plt.xlabel("Duration (s)")
+plt.show()
 debug_stop = 1
