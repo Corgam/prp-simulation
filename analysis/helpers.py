@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 from os import listdir, getcwd
 
+### A file from the original simulation 
+### https://github.com/MalteBellmann/prp-simulation
+
 STATS_DIR = getcwd() + "/../stats-out/"
 
 def get_algs(ns_name, alg_prefix=""):
