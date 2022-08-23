@@ -46,6 +46,8 @@ This simulation is a fork from the [original prp-simulation](https://github.com/
 - T-FOMM
     - `me.mbe.algorithms.nextnodepred.AlgT012`: Temporal Fusion Multi Order Markov Model with multiple temporal models: Percentiles (PCTL), Temporal Discretization (TD) and [Holt Winter’s Exponential Smoothing (HWES)](https://github.com/nchandra/ExponentialSmoothing)
 
+The not-finished complex network implementation can be found in the `complex_network` branch.
+
 ### Spatial-only algorithms (original thesis):
 
 - Baseline
