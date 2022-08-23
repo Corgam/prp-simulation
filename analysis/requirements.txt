@@ -1,0 +1,5 @@
+matplotlib==3.5.2
+numpy==1.22.1
+pandas==1.4.3
+seaborn==0.11.2
+statsmodels==0.13.2
