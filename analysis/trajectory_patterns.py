@@ -48,7 +48,8 @@ df: pd.DataFrame = pd.DataFrame(training_data_all, columns=["starting_date", "du
 timeseries = df["duration"]
 
 # Show the final plot
-rolmean = pd.Series(timeseries).rolling(window=30).mean() 
+rolmean = pd.Series(timeseries).rolling(window=30).mean()
+plt.figure(figsize=(8, 4.8))
 plt.plot(timeseries, color= "lightskyblue",label= "Raw Trajectory Data")
 plt.plot(rolmean, label='Rolling Mean (x30)')
 av = sum(timeseries)/len(timeseries)
@@ -57,5 +58,7 @@ plt.ylabel("Duration (s)")
 plt.legend(fontsize=10, title_fontsize=15)
 plt.rcParams["font.size"] = "60"
 plt.yticks(np.arange(0,50000,1000))
+plt.xlim(300,700)
+plt.ylim(0,5000)
 plt.show()
 debug_stop = 1

@@ -1,6 +1,7 @@
 
 import datetime
 import pickle
+from turtle import color
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -59,6 +60,7 @@ df = df[df.duration < df.duration.quantile(0.99)]
 sns.ecdfplot(df, x="duration", hue="Day")
 av = df["duration"].mean()
 plt.axvline(x = av, color = "r", label= "Arithmetic Mean")
+plt.annotate("Total arithmetic mean",xytext=(av+300,0.2),xy=(av,0.2), color="red",arrowprops={"arrowstyle":"->", "color": "red"})
 plt.yticks(np.arange(0,1,0.1))
 plt.xticks(np.arange(0,10000,500))
 plt.xlabel("Duration (s)")
