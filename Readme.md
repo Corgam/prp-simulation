@@ -26,7 +26,7 @@ This simulation is a fork from the [original prp-simulation](https://github.com/
 
 1. Clone repository
 2. Setup gradle
-3. Copy the [Geolife Data][1] into the geolife-data folder.
+3. Copy the [Geolife Data][1] into the geolife-data folder (copy the whole `Data` folder).
 4. Run the `me.mbe.prp.TransformGeolife` main method in the test module
 5. Run the evaluations in `me.mbe.prp.geolife.Evaluation`
 6. Results can be found in the `stats-out` directory (The results folder already contains the results files, in order to create new ones, delete the existing ones.)
